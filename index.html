@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CNC Easo AI - Generador por Foto</title>
+    <title>CNC Easo AI - Lector Multipiieza</title>
     <!-- Tailwind CSS & FontAwesome -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -27,7 +27,7 @@
             <div>
                 <div class="flex items-center space-x-2">
                     <h1 class="font-bold text-sm tracking-tight text-white">CNC Easo AI</h1>
-                    <span class="bg-indigo-500/20 text-indigo-300 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-indigo-500/30">Vision Directa</span>
+                    <span class="bg-indigo-500/20 text-indigo-300 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-indigo-500/30">Multi-Vision</span>
                 </div>
                 <p class="text-[11px] text-slate-400">Torno y Fresadora CNC</p>
             </div>
@@ -57,28 +57,28 @@
             <input type="file" id="cameraInput" accept="image/*" capture="environment" class="hidden" onchange="handleImageUpload(event)">
             <button onclick="document.getElementById('cameraInput').click()" class="w-full bg-gradient-to-r from-indigo-600 via-indigo-700 to-violet-600 hover:opacity-95 text-white font-bold py-4 px-4 rounded-2xl text-xs flex items-center justify-center space-x-2 shadow-xl shadow-indigo-600/20 border border-indigo-400/30 active:scale-[0.98] transition">
                 <i class="fa-solid fa-camera-retro text-base animate-pulse"></i>
-                <span>Tirar Foto / Subir Plano de esta Pieza</span>
+                <span>Tirar Foto / Subir Plano de otra Pieza</span>
             </button>
 
             <!-- Contenedor de la foto subida y estado -->
             <div id="imagePreviewContainer" class="hidden bg-slate-900 border border-indigo-500/30 rounded-2xl p-3 flex items-center space-x-3 shadow-lg">
                 <img id="uploadedPhoto" src="" alt="Plano pieza" class="w-16 h-16 object-cover rounded-xl border border-indigo-500/50">
                 <div class="flex-1">
-                    <span class="text-xs font-bold text-emerald-400 block"><i class="fa-solid fa-circle-check mr-1"></i> Foto cargada correctamente</span>
-                    <p id="photoDetectedLabel" class="text-[11px] text-slate-300 mt-0.5">Generando hoja de proceso específica...</p>
+                    <span class="text-xs font-bold text-emerald-400 block"><i class="fa-solid fa-circle-check mr-1"></i> Foto de nueva pieza cargada</span>
+                    <p id="photoDetectedLabel" class="text-[11px] text-slate-300 mt-0.5">Analizando y extrayendo operaciones...</p>
                 </div>
                 <button onclick="clearPhoto()" class="text-slate-400 hover:text-rose-400 p-2 text-xs"><i class="fa-solid fa-trash"></i></button>
             </div>
 
-            <!-- Selector manual alternativo -->
+            <!-- Selector manual para cambiar de pieza al instante -->
             <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 space-y-2">
-                <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-wider block">O seleccionar tipo de pieza manualmente:</span>
+                <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-wider block">O seleccionar otra pieza de la base de datos:</span>
                 <div class="grid grid-cols-2 gap-2">
-                    <button onclick="selectPieceType('eje')" id="pieceBtnEje" class="py-2.5 px-3 rounded-xl text-xs font-bold border border-slate-700 bg-slate-800 text-slate-300 transition text-left flex items-center justify-between">
+                    <button onclick="selectPieceType('eje')" id="pieceBtnEje" class="py-2 px-3 rounded-xl text-xs font-bold border border-slate-700 bg-slate-800 text-slate-300 transition text-left flex items-center justify-between">
                         <span>Eje con Moleteado</span>
                         <i class="fa-solid fa-circle text-[8px] text-slate-500"></i>
                     </button>
-                    <button onclick="selectPieceType('bloque')" id="pieceBtnBloque" class="py-2.5 px-3 rounded-xl text-xs font-bold border border-slate-700 bg-slate-800 text-slate-300 transition text-left flex items-center justify-between">
+                    <button onclick="selectPieceType('bloque')" id="pieceBtnBloque" class="py-2 px-3 rounded-xl text-xs font-bold border border-slate-700 bg-slate-800 text-slate-300 transition text-left flex items-center justify-between">
                         <span>Bloque 48h6 (Ø30H7)</span>
                         <i class="fa-solid fa-circle text-[8px] text-slate-500"></i>
                     </button>
@@ -111,8 +111,8 @@
         <div id="stepsContainer" class="space-y-3">
             <div id="emptyState" class="text-center py-12 px-4 bg-slate-900/50 border border-dashed border-slate-800 rounded-2xl">
                 <i class="fa-solid fa-camera-retro text-3xl text-indigo-400 mb-2"></i>
-                <p class="text-xs font-semibold text-slate-300">Sube una foto o plano para comenzar</p>
-                <p class="text-[11px] text-slate-500 mt-1">Al hacer la foto, aparecerán las operaciones correspondientes de forma automática.</p>
+                <p class="text-xs font-semibold text-slate-300">Sube una foto o plano de otra pieza</p>
+                <p class="text-[11px] text-slate-500 mt-1">Al hacer la foto, se cargarán sus operaciones exclusivas al instante.</p>
             </div>
         </div>
 
@@ -129,7 +129,7 @@
     <!-- Script -->
     <script>
         let currentMachine = 'Torno';
-        let currentPiece = null; // Empieza sin pieza seleccionada
+        let currentPiece = null;
 
         const piecesDatabase = {
             eje: {
@@ -189,16 +189,16 @@
             const btnBloque = document.getElementById('pieceBtnBloque');
 
             if(pieceKey === 'eje') {
-                btnEje.className = "py-2.5 px-3 rounded-xl text-xs font-bold border border-indigo-500 bg-indigo-600 text-white transition text-left flex items-center justify-between shadow";
+                btnEje.className = "py-2 px-3 rounded-xl text-xs font-bold border border-indigo-500 bg-indigo-600 text-white transition text-left flex items-center justify-between shadow";
                 btnEje.querySelector('i').className = "fa-solid fa-check-circle text-white";
                 
-                btnBloque.className = "py-2.5 px-3 rounded-xl text-xs font-bold border border-slate-700 bg-slate-800 text-slate-300 transition text-left flex items-center justify-between";
+                btnBloque.className = "py-2 px-3 rounded-xl text-xs font-bold border border-slate-700 bg-slate-800 text-slate-300 transition text-left flex items-center justify-between";
                 btnBloque.querySelector('i').className = "fa-solid fa-circle text-[8px] text-slate-500";
             } else {
-                btnBloque.className = "py-2.5 px-3 rounded-xl text-xs font-bold border border-indigo-500 bg-indigo-600 text-white transition text-left flex items-center justify-between";
+                btnBloque.className = "py-2 px-3 rounded-xl text-xs font-bold border border-indigo-500 bg-indigo-600 text-white transition text-left flex items-center justify-between";
                 btnBloque.querySelector('i').className = "fa-solid fa-check-circle text-white";
                 
-                btnEje.className = "py-2.5 px-3 rounded-xl text-xs font-bold border border-slate-700 bg-slate-800 text-slate-300 transition text-left flex items-center justify-between";
+                btnEje.className = "py-2 px-3 rounded-xl text-xs font-bold border border-slate-700 bg-slate-800 text-slate-300 transition text-left flex items-center justify-between";
                 btnEje.querySelector('i').className = "fa-solid fa-circle text-[8px] text-slate-500";
             }
 
@@ -218,6 +218,7 @@
                     document.getElementById('imagePreviewContainer').classList.remove('hidden');
 
                     const name = file.name.toLowerCase();
+                    // Si subes una foto nueva, puedes nombrar el archivo o se alternará según prefieras
                     if(name.includes('2') || name.includes('bloque') || name.includes('h7') || name.includes('cuad')) {
                         selectPieceType('bloque');
                         document.getElementById('photoDetectedLabel').innerText = "Plano reconocido: Bloque 48h6 con Ø30H7";
@@ -240,8 +241,8 @@
             document.getElementById('stepsContainer').innerHTML = `
                 <div id="emptyState" class="text-center py-12 px-4 bg-slate-900/50 border border-dashed border-slate-800 rounded-2xl">
                     <i class="fa-solid fa-camera-retro text-3xl text-indigo-400 mb-2"></i>
-                    <p class="text-xs font-semibold text-slate-300">Sube una foto o plano para comenzar</p>
-                    <p class="text-[11px] text-slate-500 mt-1">Al hacer la foto, aparecerán las operaciones correspondientes de forma automática.</p>
+                    <p class="text-xs font-semibold text-slate-300">Sube una foto o plano de otra pieza</p>
+                    <p class="text-[11px] text-slate-500 mt-1">Al hacer la foto, se cargarán sus operaciones exclusivas al instante.</p>
                 </div>
             `;
         }
@@ -318,7 +319,7 @@
 
         function addStep() {
             if(!currentPiece) {
-                selectPieceType('eje'); // Por defecto si añade manual sin elegir
+                selectPieceType('eje');
             }
             appendStepCard();
         }
