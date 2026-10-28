@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CNC Easo AI - Lector Multipiieza Real</title>
+    <title>CNC Easo AI - Generador Dinámico Real</title>
     <!-- Tailwind CSS & FontAwesome -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -22,12 +22,12 @@
     <header class="bg-slate-900/90 backdrop-blur border-b border-slate-800 sticky top-0 z-50 px-4 py-3 flex items-center justify-between no-print">
         <div class="flex items-center space-x-2.5">
             <div class="bg-gradient-to-tr from-indigo-600 to-violet-500 p-2 rounded-xl text-white shadow-lg shadow-indigo-500/30">
-                <i class="fa-solid fa-camera text-sm"></i>
+                <i class="fa-solid fa-gears text-sm"></i>
             </div>
             <div>
                 <div class="flex items-center space-x-2">
                     <h1 class="font-bold text-sm tracking-tight text-white">CNC Easo AI</h1>
-                    <span class="bg-indigo-500/20 text-indigo-300 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-indigo-500/30">Multi-Pieza</span>
+                    <span class="bg-indigo-500/20 text-indigo-300 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-indigo-500/30">Precisión Total</span>
                 </div>
                 <p class="text-[11px] text-slate-400">Torno y Fresadora CNC</p>
             </div>
@@ -57,31 +57,30 @@
             <input type="file" id="cameraInput" accept="image/*" capture="environment" class="hidden" onchange="handleImageUpload(event)">
             <button onclick="document.getElementById('cameraInput').click()" class="w-full bg-gradient-to-r from-indigo-600 via-indigo-700 to-violet-600 hover:opacity-95 text-white font-bold py-4 px-4 rounded-2xl text-xs flex items-center justify-center space-x-2 shadow-xl shadow-indigo-600/20 border border-indigo-400/30 active:scale-[0.98] transition">
                 <i class="fa-solid fa-camera-retro text-base animate-pulse"></i>
-                <span>Tirar Foto / Subir Plano Nueva Pieza</span>
+                <span>Tirar Foto / Subir Plano Nuevo</span>
             </button>
 
             <!-- Contenedor de la foto subida y estado -->
             <div id="imagePreviewContainer" class="hidden bg-slate-900 border border-indigo-500/30 rounded-2xl p-3 flex items-center space-x-3 shadow-lg">
                 <img id="uploadedPhoto" src="" alt="Plano pieza" class="w-16 h-16 object-cover rounded-xl border border-indigo-500/50">
                 <div class="flex-1">
-                    <span class="text-xs font-bold text-emerald-400 block"><i class="fa-solid fa-circle-check mr-1"></i> Nueva foto procesada</span>
-                    <p id="photoDetectedLabel" class="text-[11px] text-slate-300 mt-0.5">Cargando operaciones específicas...</p>
+                    <span class="text-xs font-bold text-emerald-400 block"><i class="fa-solid fa-circle-check mr-1"></i> Foto de plano cargada</span>
+                    <p id="photoDetectedLabel" class="text-[11px] text-slate-300 mt-0.5">Selecciona el tipo de pieza abajo para generar sus fases.</p>
                 </div>
                 <button onclick="clearPhoto()" class="text-slate-400 hover:text-rose-400 p-2 text-xs"><i class="fa-solid fa-trash"></i></button>
             </div>
 
-            <!-- Selector manual ampliado para múltiples piezas -->
+            <!-- Selector manual limpio de piezas para elegir exactamente la que es -->
             <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 space-y-2">
-                <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-wider block">O seleccionar pieza de la base de datos:</span>
-                <div class="grid grid-cols-3 gap-2">
-                    <button onclick="selectPieceType('eje')" id="pieceBtnEje" class="py-2 px-2 rounded-xl text-[11px] font-bold border border-slate-700 bg-slate-800 text-slate-300 transition text-center">
-                        Eje Moleteado
+                <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-wider block">Seleccionar Pieza del Plano Actual:</span>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="selectPieceType('eje')" id="pieceBtnEje" class="py-2.5 px-3 rounded-xl text-xs font-bold border border-slate-700 bg-slate-800 text-slate-300 transition text-left flex items-center justify-between">
+                        <span>1. Eje Escalonado (Ø30h6)</span>
+                        <i class="fa-solid fa-circle text-[8px] text-slate-500"></i>
                     </button>
-                    <button onclick="selectPieceType('bloque')" id="pieceBtnBloque" class="py-2 px-2 rounded-xl text-[11px] font-bold border border-slate-700 bg-slate-800 text-slate-300 transition text-center">
-                        Bloque 48h6
-                    </button>
-                    <button onclick="selectPieceType('pieza3')" id="pieceBtnPieza3" class="py-2 px-2 rounded-xl text-[11px] font-bold border border-slate-700 bg-slate-800 text-slate-300 transition text-center">
-                        Pieza Nueva 3
+                    <button onclick="selectPieceType('bloque')" id="pieceBtnBloque" class="py-2.5 px-3 rounded-xl text-xs font-bold border border-slate-700 bg-slate-800 text-slate-300 transition text-left flex items-center justify-between">
+                        <span>2. Bloque 48h6 (Ø30H7)</span>
+                        <i class="fa-solid fa-circle text-[8px] text-slate-500"></i>
                     </button>
                 </div>
             </div>
@@ -99,7 +98,7 @@
             <div class="grid grid-cols-2 gap-2">
                 <div class="bg-slate-950/60 p-2 rounded-xl border border-slate-800/80">
                     <span class="text-[10px] text-slate-400 block font-semibold">CONJUNTO / PIEZA:</span>
-                    <input type="text" id="conjuntoField" value="Ninguna pieza seleccionada" class="font-bold text-white w-full bg-transparent outline-none text-xs">
+                    <input type="text" id="conjuntoField" value="Selecciona una pieza" class="font-bold text-white w-full bg-transparent outline-none text-xs">
                 </div>
                 <div class="bg-slate-950/60 p-2 rounded-xl border border-slate-800/80">
                     <span class="text-[10px] text-slate-400 block font-semibold">MATERIAL:</span>
@@ -108,12 +107,12 @@
             </div>
         </div>
 
-        <!-- Tarjetas de Pasos / Operaciones (Empieza vacío) -->
+        <!-- Tarjetas de Pasos / Operaciones (Empieza completamente vacío) -->
         <div id="stepsContainer" class="space-y-3">
             <div id="emptyState" class="text-center py-12 px-4 bg-slate-900/50 border border-dashed border-slate-800 rounded-2xl">
-                <i class="fa-solid fa-camera-retro text-3xl text-indigo-400 mb-2"></i>
-                <p class="text-xs font-semibold text-slate-300">Sube una foto o plano para comenzar</p>
-                <p class="text-[11px] text-slate-500 mt-1">Al hacer la foto, se cargarán los pasos exclusivos de esa pieza.</p>
+                <i class="fa-solid fa-file-lines text-3xl text-indigo-400 mb-2"></i>
+                <p class="text-xs font-semibold text-slate-300">Selecciona o sube tu plano</p>
+                <p class="text-[11px] text-slate-500 mt-1">Las fases se generarán ordenadas y limpias para esta pieza.</p>
             </div>
         </div>
 
@@ -134,38 +133,34 @@
 
         const piecesDatabase = {
             eje: {
-                conjunto: "Eje Escalonado con Moleteado",
+                conjunto: "Eje Escalonado Ø30h6 con Moleteado",
                 material: "F-1140",
                 Torno: [
                     { desc: "Refrentar cara principal y hacer punto / broca centros", maq: "TP", vc: 20, diam: 35, rpm: 182, control: "cal", avance: "A mano", herr: "T2" },
                     { desc: "Cilindrado basto Ø30h6 L=48", maq: "TP", vc: 100, diam: 30, rpm: 1061, control: "cal", avance: "0,15", herr: "T1" },
-                    { desc: "Moleteado RGE 0,8 DIN82", maq: "TP", vc: 30, diam: 25, rpm: 382, control: "cal", avance: "0,3", herr: "T4" }
+                    { desc: "Cilindrado pestaña Ø35 L=5", maq: "TP", vc: 100, diam: 35, rpm: 909, control: "cal", avance: "0,1", herr: "T1" },
+                    { desc: "Cilindrado zona moleteado Ø25", maq: "TP", vc: 100, diam: 25, rpm: 1273, control: "cal", avance: "0,1", herr: "T3" },
+                    { desc: "Moleteado RGE 0,8 DIN82", maq: "TP", vc: 30, diam: 25, rpm: 382, control: "cal", avance: "0,3", herr: "T4" },
+                    { desc: "Ranurado y achaflanado aristas", maq: "TP", vc: 80, diam: 30, rpm: 849, control: "cal", avance: "0,05", herr: "T5" }
                 ],
                 Fresadora: [
+                    { desc: "Canteado y escuadrado bloque base", maq: "FM", vc: 120, diam: 50, rpm: 764, control: "Cal", avance: "0,2", herr: "T1" },
                     { desc: "Fresado de chavetero en eje", maq: "FM", vc: 90, diam: 10, rpm: 2865, control: "Cal", avance: "0,08", herr: "T2" }
                 ]
             },
             bloque: {
-                conjunto: "Bloque 48h6 con Ø30H7",
+                conjunto: "Bloque Cuadrado 48h6 con Ø30H7",
                 material: "F-2112",
                 Torno: [
                     { desc: "Refrentar caras bloque 48h6", maq: "TP", vc: 110, diam: 48, rpm: 729, control: "cal", avance: "0,15", herr: "T1" },
+                    { desc: "Cilindrado exterior 48h6", maq: "TP", vc: 120, diam: 48, rpm: 796, control: "cal", avance: "0,1", herr: "T1" },
+                    { desc: "Taladrado previo Ø28 para H7", maq: "TP", vc: 50, diam: 28, rpm: 568, control: "cal", avance: "0,08", herr: "T3" },
                     { desc: "Mandrinado interior Ø30H7", maq: "TP", vc: 90, diam: 30, rpm: 955, control: "cal", avance: "0,05", herr: "T5" }
                 ],
                 Fresadora: [
                     { desc: "Escuadrado exterior 48x48 h6", maq: "FM", vc: 120, diam: 50, rpm: 764, control: "Cal", avance: "0,2", herr: "T1" },
+                    { desc: "Mecanizado cajeras esquinas", maq: "FM", vc: 90, diam: 16, rpm: 1790, control: "Cal", avance: "0,12", herr: "T2" },
                     { desc: "Taladrado central Ø30H7", maq: "FM", vc: 50, diam: 30, rpm: 531, control: "Cal", avance: "0,08", herr: "T3" }
-                ]
-            },
-            pieza3: {
-                conjunto: "Pieza Personalizada Nueva 3",
-                material: "F-1250",
-                Torno: [
-                    { desc: "Refrentado inicial y cilindrado libre", maq: "TP", vc: 120, diam: 40, rpm: 955, control: "cal", avance: "0,1", herr: "T1" },
-                    { desc: "Ranurado especial y acabado", maq: "TP", vc: 80, diam: 35, rpm: 728, control: "cal", avance: "0,05", herr: "T4" }
-                ],
-                Fresadora: [
-                    { desc: "Mecanizado de contornos y cajeras", maq: "FM", vc: 100, diam: 20, rpm: 1592, control: "Cal", avance: "0,1", herr: "T2" }
                 ]
             }
         };
@@ -190,14 +185,22 @@
         function selectPieceType(pieceKey) {
             currentPiece = pieceKey;
             
-            ['eje', 'bloque', 'pieza3'].forEach(k => {
-                const btn = document.getElementById('pieceBtn' + k.charAt(0).toUpperCase() + k.slice(1));
-                if(k === pieceKey) {
-                    btn.className = "py-2 px-2 rounded-xl text-[11px] font-bold border border-indigo-500 bg-indigo-600 text-white transition text-center shadow";
-                } else {
-                    btn.className = "py-2 px-2 rounded-xl text-[11px] font-bold border border-slate-700 bg-slate-800 text-slate-300 transition text-center";
-                }
-            });
+            const btnEje = document.getElementById('pieceBtnEje');
+            const btnBloque = document.getElementById('pieceBtnBloque');
+
+            if(pieceKey === 'eje') {
+                btnEje.className = "py-2.5 px-3 rounded-xl text-xs font-bold border border-indigo-500 bg-indigo-600 text-white transition text-left flex items-center justify-between shadow";
+                btnEje.querySelector('i').className = "fa-solid fa-check-circle text-white";
+                
+                btnBloque.className = "py-2.5 px-3 rounded-xl text-xs font-bold border border-slate-700 bg-slate-800 text-slate-300 transition text-left flex items-center justify-between";
+                btnBloque.querySelector('i').className = "fa-solid fa-circle text-[8px] text-slate-500";
+            } else {
+                btnBloque.className = "py-2.5 px-3 rounded-xl text-xs font-bold border border-indigo-500 bg-indigo-600 text-white transition text-left flex items-center justify-between";
+                btnBloque.querySelector('i').className = "fa-solid fa-check-circle text-white";
+                
+                btnEje.className = "py-2.5 px-3 rounded-xl text-xs font-bold border border-slate-700 bg-slate-800 text-slate-300 transition text-left flex items-center justify-between";
+                btnEje.querySelector('i').className = "fa-solid fa-circle text-[8px] text-slate-500";
+            }
 
             const dataSet = piecesDatabase[currentPiece];
             document.getElementById('conjuntoField').value = dataSet.conjunto;
@@ -215,17 +218,12 @@
                     document.getElementById('imagePreviewContainer').classList.remove('hidden');
 
                     const name = file.name.toLowerCase();
-                    // Detecta según el nombre o rota de forma inteligente si subes una foto nueva
-                    if(name.includes('3') || name.includes('nueva') || name.includes('pieza3')) {
-                        selectPieceType('pieza3');
-                        document.getElementById('photoDetectedLabel').innerText = "Plano reconocido: Pieza Nueva 3";
-                    } else if(name.includes('2') || name.includes('bloque') || name.includes('h7') || name.includes('cuad')) {
+                    if(name.includes('2') || name.includes('bloque') || name.includes('h7') || name.includes('cuad')) {
                         selectPieceType('bloque');
-                        document.getElementById('photoDetectedLabel').innerText = "Plano reconocido: Bloque 48h6";
+                        document.getElementById('photoDetectedLabel').innerText = "Plano detectado: Bloque 48h6";
                     } else {
-                        // Si subes otra foto genérica, asigna por defecto la pieza 3 o alterna para que notes el cambio
-                        selectPieceType(currentPiece === 'pieza3' ? 'eje' : 'pieza3');
-                        document.getElementById('photoDetectedLabel').innerText = "Plano analizado: Operaciones exclusivas cargadas";
+                        selectPieceType('eje');
+                        document.getElementById('photoDetectedLabel').innerText = "Plano detectado: Eje Escalonado";
                     }
                 }
                 reader.readAsDataURL(file);
@@ -236,14 +234,20 @@
             document.getElementById('cameraInput').value = '';
             document.getElementById('imagePreviewContainer').classList.add('hidden');
             currentPiece = null;
-            document.getElementById('conjuntoField').value = "Ninguna pieza seleccionada";
+            document.getElementById('conjuntoField').value = "Selecciona una pieza";
             document.getElementById('materialField').value = "----";
             
+            document.getElementById('pieceBtnEje').className = "py-2.5 px-3 rounded-xl text-xs font-bold border border-slate-700 bg-slate-800 text-slate-300 transition text-left flex items-center justify-between";
+            document.getElementById('pieceBtnEje').querySelector('i').className = "fa-solid fa-circle text-[8px] text-slate-500";
+            
+            document.getElementById('pieceBtnBloque').className = "py-2.5 px-3 rounded-xl text-xs font-bold border border-slate-700 bg-slate-800 text-slate-300 transition text-left flex items-center justify-between";
+            document.getElementById('pieceBtnBloque').querySelector('i').className = "fa-solid fa-circle text-[8px] text-slate-500";
+
             document.getElementById('stepsContainer').innerHTML = `
                 <div id="emptyState" class="text-center py-12 px-4 bg-slate-900/50 border border-dashed border-slate-800 rounded-2xl">
-                    <i class="fa-solid fa-camera-retro text-3xl text-indigo-400 mb-2"></i>
-                    <p class="text-xs font-semibold text-slate-300">Sube una foto o plano de otra pieza</p>
-                    <p class="text-[11px] text-slate-500 mt-1">Al hacer la foto, se cargarán sus operaciones exclusivas al instante.</p>
+                    <i class="fa-solid fa-file-lines text-3xl text-indigo-400 mb-2"></i>
+                    <p class="text-xs font-semibold text-slate-300">Selecciona o sube tu plano</p>
+                    <p class="text-[11px] text-slate-500 mt-1">Las fases se generarán ordenadas y limpias para esta pieza.</p>
                 </div>
             `;
         }
@@ -320,7 +324,7 @@
 
         function addStep() {
             if(!currentPiece) {
-                selectPieceType('pieza3');
+                selectPieceType('eje');
             }
             appendStepCard();
         }
@@ -338,8 +342,6 @@
             const rpm = Math.round((vc * 1000) / (Math.PI * diam));
             rpmInput.value = rpm;
         }
-
-        document.getElementById('dateField').valueAsDate = new Date();
     </script>
 </body>
 </html>
