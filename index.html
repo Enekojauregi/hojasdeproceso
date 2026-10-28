@@ -3,307 +3,236 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>CNC Process Sheet - Easo Politeknikoa</title>
-<!-- Tailwind CSS & Lucide Icons -->
+<title>CNC Easo AI - Generador Inteligente</title>
+<!-- Tailwind CSS & FontAwesome -->
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-<!-- Google Fonts -->
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 body { font-family: 'Plus Jakarta Sans', sans-serif; }
 @media print {
 .no-print { display: none !important; }
 body { background: white !important; color: black !important; }
-.print-container { box-shadow: none !important; border: none !important; padding: 0 !important; }
+.print-container { box-shadow: none !important; border: none !important; }
 }
 </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col pb-20">
 
-<!-- Header -->
-<header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50 px-4 py-3 flex items-center justify-between no-print">
-<div class="flex items-center space-x-3">
-<div class="bg-indigo-600 p-2 rounded-xl text-white shadow-lg shadow-indigo-500/30">
-<i class="fa-solid fa-gears text-lg"></i>
+<!-- Header / Navbar estilo App -->
+<header class="bg-slate-900/90 backdrop-blur border-b border-slate-800 sticky top-0 z-50 px-4 py-3 flex items-center justify-between no-print">
+<div class="flex items-center space-x-2.5">
+<div class="bg-gradient-to-tr from-indigo-600 to-violet-500 p-2 rounded-xl text-white shadow-lg shadow-indigo-500/30">
+<i class="fa-solid fa-wand-magic-sparkles text-sm"></i>
 </div>
 <div>
-<h1 class="font-bold text-base leading-tight">CNC Process Generator</h1>
-<p class="text-xs text-slate-400">Easo Politeknikoa Style</p>
+<div class="flex items-center space-x-2">
+<h1 class="font-bold text-sm tracking-tight text-white">CNC Easo AI</h1>
+<span class="bg-indigo-500/20 text-indigo-300 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-indigo-500/30">Auto-Vision</span>
+</div>
+<p class="text-[11px] text-slate-400">Generador Inteligente por Foto</p>
 </div>
 </div>
 <div class="flex items-center space-x-2">
-<button onclick="window.print()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-2 rounded-xl text-xs font-semibold flex items-center space-x-1.5 transition border border-slate-700">
-<i class="fa-solid fa-file-pdf text-rose-400"></i>
-<span>PDF / Imprimir</span>
+<button onclick="window.print()" class="bg-indigo-600 hover:bg-indigo-500 text-white p-2.5 rounded-xl text-xs font-semibold flex items-center justify-center shadow-lg shadow-indigo-600/30 transition">
+<i class="fa-solid fa-file-pdf text-sm"></i>
 </button>
 </div>
 </header>
 
 <!-- Main Container -->
-<main class="flex-1 max-w-4xl w-full mx-auto p-3 sm:p-6 space-y-5">
+<main class="flex-1 max-w-xl w-full mx-auto p-3 sm:p-4 space-y-4">
 
-<!-- STEP 1: Camera & Quick AI Fill -->
-<section class="bg-gradient-to-br from-slate-900 to-slate-900/90 border border-indigo-500/30 rounded-2xl p-4 sm:p-6 shadow-xl no-print relative overflow-hidden">
-<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-<div>
-<span class="inline-block bg-indigo-500/20 text-indigo-300 text-xs font-semibold px-2.5 py-1 rounded-full mb-2 border border-indigo-500/30">
-<i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Modo Inteligente Móvil
-</span>
-<h2 class="text-lg font-bold">Captura o selecciona la foto de la pieza</h2>
-<p class="text-xs text-slate-400">Al seleccionar o hacer la foto, la tabla se autocompletará con las operaciones de mecanizado.</p>
+<!-- Selector Torno / Fresadora & Cámara -->
+<div class="space-y-3 no-print">
+<div class="flex items-center justify-between bg-slate-900 p-1.5 rounded-2xl border border-slate-800 shadow-inner">
+<button onclick="setMachineType('Torno')" id="btnTorno" class="flex-1 py-2 rounded-xl font-bold text-xs flex items-center justify-center space-x-2 transition bg-indigo-600 text-white shadow-md">
+<i class="fa-solid fa-circle-dot"></i>
+<span>Torno</span>
+</button>
+<button onclick="setMachineType('Fresadora')" id="btnFresadora" class="flex-1 py-2 rounded-xl font-bold text-xs flex items-center justify-center space-x-2 transition text-slate-400 hover:text-white">
+<i class="fa-solid fa-cube"></i>
+<span>Fresadora</span>
+</button>
 </div>
 
-<div class="flex flex-wrap gap-2 w-full sm:w-auto">
-<!-- Input sin capture forzado para evitar bloqueos en Android/iOS -->
+<!-- Botón Captura Foto -->
 <input type="file" id="cameraInput" accept="image/*" class="hidden" onchange="handleImageCapture(event)">
-
-<button onclick="document.getElementById('cameraInput').click()" class="flex-1 sm:flex-none bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold px-5 py-3 rounded-xl text-sm flex items-center justify-center space-x-2 shadow-lg shadow-indigo-600/30 transition transform active:scale-95">
+<button onclick="document.getElementById('cameraInput').click()" class="w-full bg-gradient-to-r from-indigo-600 via-indigo-700 to-violet-600 hover:opacity-95 text-white font-bold py-3.5 px-4 rounded-2xl text-xs flex items-center justify-center space-x-2 shadow-xl shadow-indigo-600/20 border border-indigo-400/30 active:scale-[0.98] transition">
 <i class="fa-solid fa-camera text-base"></i>
-<span>Hacer Foto / Subir Imagen</span>
+<span>Tirar Foto al Plano / Pieza (Auto-Relleno)</span>
 </button>
 </div>
-</div>
 
-<!-- Image Preview Area -->
-<div id="previewContainer" class="hidden mt-4 pt-4 border-t border-slate-800 flex items-center space-x-4">
-<img id="capturedImage" src="" alt="Pieza capturada" class="w-20 h-20 object-cover rounded-xl border border-indigo-500/40">
-<div class="flex-1">
-<p class="text-xs font-medium text-emerald-400 flex items-center"><i class="fa-solid fa-circle-check mr-1.5"></i> ¡Foto procesada con éxito!</p>
-<p class="text-xs text-slate-400 mt-0.5">Operaciones y cálculos cargados en la hoja de proceso.</p>
-</div>
-<button onclick="clearImage()" class="text-slate-400 hover:text-rose-400 p-2 text-sm"><i class="fa-solid fa-trash"></i></button>
-</div>
-</section>
-
-<!-- STEP 2: Process Sheet Form (Easo Style) -->
-<div id="processSheet" class="bg-white text-slate-900 rounded-2xl shadow-2xl overflow-hidden print-container border border-slate-700">
-
-<!-- Sheet Header / Cabecera -->
-<div class="border-b-2 border-slate-900 p-4 sm:p-5 bg-slate-50">
-<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-<div class="flex items-center space-x-3">
-<div class="border-2 border-slate-900 rounded-lg p-2 text-center font-black tracking-tighter text-xs leading-none bg-white">
-<span>EASO</span><br><span class="text-[9px] font-normal">POLITEKNIKOA</span>
-</div>
-<div>
-<h3 class="font-extrabold text-sm sm:text-base uppercase tracking-wider text-slate-900">HOJA PROCESO DE <span id="sheetTypeTitle">TORNO</span></h3>
-<p class="text-xs text-slate-600 font-medium">Práctica de Mecanizado CNC</p>
-</div>
-</div>
-
-<div class="grid grid-cols-2 sm:flex gap-2 w-full sm:w-auto text-xs">
-<div class="border border-slate-300 rounded p-1.5 bg-white">
-<span class="block text-[10px] text-slate-500 font-semibold">GRUPO:</span>
-<input type="text" id="groupField" value="ME21" class="font-bold w-16 outline-none bg-transparent">
-</div>
-<div class="border border-slate-300 rounded p-1.5 bg-white">
-<span class="block text-[10px] text-slate-500 font-semibold">FECHA:</span>
-<input type="date" id="dateField" class="font-bold outline-none bg-transparent text-xs">
-</div>
-</div>
-</div>
-
-<!-- Meta Info Grid -->
-<div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3 pt-3 border-t border-slate-200 text-xs">
-<div class="border border-slate-300 rounded p-1.5 bg-white">
-<span class="text-[10px] text-slate-500 block">NOMBRE:</span>
-<input type="text" id="nameField" value="Jon K." class="font-bold w-full outline-none bg-transparent">
-</div>
-<div class="border border-slate-300 rounded p-1.5 bg-white">
-<span class="text-[10px] text-slate-500 block">CONJUNTO:</span>
-<input type="text" id="conjuntoField" value="Eje Reductor" class="font-bold w-full outline-none bg-transparent">
-</div>
-<div class="border border-slate-300 rounded p-1.5 bg-white">
-<span class="text-[10px] text-slate-500 block">MATERIAL:</span>
-<input type="text" id="materialField" value="F-1140" class="font-bold w-full outline-none bg-transparent">
-</div>
-<div class="border border-slate-300 rounded p-1.5 bg-white">
-<span class="text-[10px] text-slate-500 block">PLANO Nº:</span>
-<input type="text" id="planoField" value="P-01" class="font-bold w-full outline-none bg-transparent">
-</div>
-</div>
-</div>
-
-<!-- Machine Selector Bar -->
-<div class="bg-slate-200 px-4 py-2 flex items-center justify-between border-b border-slate-300 no-print text-xs">
-<span class="font-bold text-slate-700">Tipo de Máquina:</span>
+<!-- Información Cabecera Hoja -->
+<div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 text-xs space-y-2.5 shadow-lg">
+<div class="flex justify-between items-center border-b border-slate-800 pb-2">
+<span class="font-bold text-indigo-400 uppercase tracking-wider" id="sheetTitle">Hoja Proceso Torno</span>
 <div class="flex space-x-2">
-<button onclick="setMachineType('Torno')" id="btnTorno" class="px-3 py-1 rounded font-bold bg-slate-900 text-white shadow">Torno CNC</button>
-<button onclick="setMachineType('Fresadora')" id="btnFresadora" class="px-3 py-1 rounded font-bold bg-white text-slate-700 border border-slate-300">Fresadora CNC</button>
+<input type="text" id="groupField" value="ME21" class="bg-slate-800 text-center text-white font-bold rounded px-2 py-1 w-14 outline-none">
+<input type="date" id="dateField" class="bg-slate-800 text-center text-white font-bold rounded px-2 py-1 outline-none">
 </div>
 </div>
-
-<!-- Operations Table -->
-<div class="overflow-x-auto">
-<table class="w-full text-left border-collapse text-xs">
-<thead>
-<tr class="bg-slate-100 text-slate-700 border-b border-slate-300 font-bold uppercase text-[10px] tracking-wider text-center">
-<th class="p-2 border-r border-slate-300 w-10">Oper.</th>
-<th class="p-2 border-r border-slate-300 text-left">Descripción de la Operación</th>
-<th class="p-2 border-r border-slate-300 w-14">Máq.</th>
-<th class="p-2 border-r border-slate-300 w-16">Herram.</th>
-<th class="p-2 border-r border-slate-300 w-16">Control</th>
-<th class="p-2 border-r border-slate-300 w-16">Vc (m/min)</th>
-<th class="p-2 border-r border-slate-300 w-16">RPM</th>
-<th class="p-2 border-r border-slate-300 w-16">Avance</th>
-<th class="p-2 w-10 no-print">Acc</th>
-</tr>
-</thead>
-<tbody id="operationsTableBody" class="divide-y divide-slate-200">
-<!-- Rows injected via JS -->
-</tbody>
-</table>
+<div class="grid grid-cols-2 gap-2">
+<div class="bg-slate-950/60 p-2 rounded-xl border border-slate-800/80">
+<span class="text-[10px] text-slate-400 block font-semibold">CONJUNTO / PIEZA:</span>
+<input type="text" id="conjuntoField" value="Eje Reductor" class="font-bold text-white w-full bg-transparent outline-none text-xs">
+</div>
+<div class="bg-slate-950/60 p-2 rounded-xl border border-slate-800/80">
+<span class="text-[10px] text-slate-400 block font-semibold">MATERIAL:</span>
+<input type="text" id="materialField" value="F-1140" class="font-bold text-white w-full bg-transparent outline-none text-xs">
+</div>
+</div>
 </div>
 
-<!-- Add Row Button -->
-<div class="p-3 bg-slate-50 border-t border-slate-200 flex justify-between items-center no-print">
-<button onclick="addRow()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs flex items-center space-x-1 shadow transition">
-<i class="fa-solid fa-plus"></i>
-<span>Añadir Operación</span>
+<!-- Tarjetas de Pasos / Operaciones (Estilo app móvil solicitado) -->
+<div id="stepsContainer" class="space-y-3">
+<!-- Las tarjetas se generan dinámicamente aquí -->
+</div>
+
+<!-- Botón Añadir Paso -->
+<div class="pt-2 no-print">
+<button onclick="addStep()" class="w-full bg-slate-900 hover:bg-slate-800 text-indigo-400 hover:text-indigo-300 font-bold py-3 rounded-2xl text-xs flex items-center justify-center space-x-2 border border-dashed border-indigo-500/40 transition">
+<i class="fa-solid fa-plus-circle text-sm"></i>
+<span>Añadir Nueva Operación / Fase</span>
 </button>
-<span class="text-[11px] text-slate-500 font-medium">Cálculo de RPM automático</span>
 </div>
 
-<!-- Tools Summary Footer -->
-<div class="border-t-2 border-slate-300 p-4 bg-slate-50 text-xs">
-<h4 class="font-extrabold text-slate-800 uppercase mb-2 text-[11px]">Herramientas Utilizadas (Herramentaje)</h4>
-<div class="grid grid-cols-2 sm:grid-cols-4 gap-2" id="toolsGrid">
-<div class="border border-slate-300 rounded p-1.5 bg-white">
-<span class="font-bold text-indigo-600">T1:</span> <input type="text" value="PCLNR Cilindrar 80º" class="w-3/4 outline-none bg-transparent">
-</div>
-<div class="border border-slate-300 rounded p-1.5 bg-white">
-<span class="font-bold text-indigo-600">T2:</span> <input type="text" value="Broca de Centros" class="w-3/4 outline-none bg-transparent">
-</div>
-<div class="border border-slate-300 rounded p-1.5 bg-white">
-<span class="font-bold text-indigo-600">T3:</span> <input type="text" value="SDJCR Cilindrar 55º" class="w-3/4 outline-none bg-transparent">
-</div>
-<div class="border border-slate-300 rounded p-1.5 bg-white">
-<span class="font-bold text-indigo-600">T4:</span> <input type="text" value="CFIR Ranurar" class="w-3/4 outline-none bg-transparent">
-</div>
-</div>
-</div>
-
-</div>
 </main>
 
-<!-- Footer -->
-<footer class="bg-slate-900 border-t border-slate-800 py-4 text-center text-xs text-slate-500 mt-auto no-print">
-<p>Easo Politeknikoa • Generador de Hojas de Proceso CNC</p>
-</footer>
-
-<!-- JavaScript Logic -->
+<!-- Script de Gestión e Interfaz -->
 <script>
 let currentMachine = 'Torno';
 
-const defaultOperations = {
+const defaultSteps = {
 Torno: [
-{ op: 1, desc: "Refrentar y limpiar", maq: "TP", herr: "T3", ctrl: "Cal", vc: 100, rpm: 1273, av: "0.1" },
-{ op: 2, desc: "Hacer punto / Broca centros", maq: "TP", herr: "T2", ctrl: "cal", vc: 20, rpm: 796, av: "A mano" },
-{ op: 3, desc: "Cilindrado Ø25,4 L=57,5", maq: "TP", herr: "T1", ctrl: "cal", vc: 100, rpm: 1254, av: "0.1" },
-{ op: 4, desc: "Rectificado Ø25h6 L=57,5", maq: "TP", herr: "T6", ctrl: "Micro", vc: 20, rpm: 250, av: "Manual" },
-{ op: 5, desc: "Cilindrado Ø24,8 (Paso)", maq: "TP", herr: "T1", ctrl: "cal", vc: 100, rpm: 1283, av: "0.1" },
-{ op: 6, desc: "Ranurado Ø23,9 z=-46,2", maq: "TP", herr: "T4", ctrl: "cal", vc: 100, rpm: 1332, av: "0.05" }
+{ desc: "Refrentar limpiar", maq: "TP", vc: 100, diam: 45, rpm: 707, control: "cal", avance: "0,1", herr: "T3" },
+{ desc: "Hacer punto / Contrapunto", maq: "TP", vc: 20, diam: 10, rpm: 637, control: "cal", avance: "A mano", herr: "T2" },
+{ desc: "Cilindrado Ø25,4 L=57,5", maq: "TP", vc: 100, diam: 25.4, rpm: 1254, control: "cal", avance: "0,1", herr: "T1" }
 ],
 Fresadora: [
-{ op: 1, desc: "Canteado y escuadrado bloque", maq: "FM", herr: "T1", ctrl: "Cal", vc: 120, rpm: 1530, av: "0.2" },
-{ op: 2, desc: "Mecanizado cajera central 80x40", maq: "FM", herr: "T2", ctrl: "Cal", vc: 90, rpm: 1146, av: "0.15" },
-{ op: 3, desc: "Taladrado 4x Ø8.5 pasante", maq: "FM", herr: "T3", ctrl: "Cal", vc: 50, rpm: 1870, av: "0.08" },
-{ op: 4, desc: "Roscado M10 con macho", maq: "FM", herr: "T4", ctrl: "Cal", vc: 15, rpm: 475, av: "Macho" }
+{ desc: "Canteado y escuadrado", maq: "FM", vc: 120, diam: 50, rpm: 764, control: "Cal", avance: "0,2", herr: "T1" },
+{ desc: "Mecanizado cajera central", maq: "FM", vc: 90, diam: 20, rpm: 1432, control: "Cal", avance: "0,15", herr: "T2" }
 ]
 };
 
 function setMachineType(type) {
 currentMachine = type;
-document.getElementById('sheetTypeTitle').innerText = type.toUpperCase();
+document.getElementById('sheetTitle').innerText = "Hoja Proceso " + type;
 
 const btnT = document.getElementById('btnTorno');
 const btnF = document.getElementById('btnFresadora');
 
 if(type === 'Torno') {
-btnT.className = "px-3 py-1 rounded font-bold bg-slate-900 text-white shadow";
-btnF.className = "px-3 py-1 rounded font-bold bg-white text-slate-700 border border-slate-300";
+btnT.className = "flex-1 py-2 rounded-xl font-bold text-xs flex items-center justify-center space-x-2 transition bg-indigo-600 text-white shadow-md";
+btnF.className = "flex-1 py-2 rounded-xl font-bold text-xs flex items-center justify-center space-x-2 transition text-slate-400 hover:text-white";
 } else {
-btnF.className = "px-3 py-1 rounded font-bold bg-slate-900 text-white shadow";
-btnT.className = "px-3 py-1 rounded font-bold bg-white text-slate-700 border border-slate-300";
+btnF.className = "flex-1 py-2 rounded-xl font-bold text-xs flex items-center justify-center space-x-2 transition bg-indigo-600 text-white shadow-md";
+btnT.className = "flex-1 py-2 rounded-xl font-bold text-xs flex items-center justify-center space-x-2 transition text-slate-400 hover:text-white";
 }
-loadOperations();
+renderSteps();
 }
 
-function loadOperations() {
-const tbody = document.getElementById('operationsTableBody');
-tbody.innerHTML = '';
-defaultOperations[currentMachine].forEach((item, index) => {
-appendRow(item, index + 1);
+function renderSteps() {
+const container = document.getElementById('stepsContainer');
+container.innerHTML = '';
+defaultSteps[currentMachine].forEach((step, index) => {
+appendStepCard(step, index + 1);
 });
 }
 
-function appendRow(data = null, opNum = null) {
-const tbody = document.getElementById('operationsTableBody');
-const rowCount = opNum || (tbody.rows.length + 1);
-const row = document.createElement('tr');
-row.className = "hover:bg-slate-50 transition";
+function appendStepCard(data = null, num = null) {
+const container = document.getElementById('stepsContainer');
+const stepNum = num || (container.children.length + 1);
 
-row.innerHTML = `
-<td class="p-2 border-r border-slate-200 text-center font-bold text-slate-600">${rowCount}</td>
-<td class="p-2 border-r border-slate-200"><input type="text" value="${data ? data.desc : ''}" class="w-full outline-none bg-transparent font-medium text-slate-900"></td>
-<td class="p-2 border-r border-slate-200 text-center"><input type="text" value="${data ? data.maq : (currentMachine === 'Torno' ? 'TP' : 'FM')}" class="w-full text-center outline-none bg-transparent"></td>
-<td class="p-2 border-r border-slate-200 text-center"><input type="text" value="${data ? data.herr : 'T1'}" class="w-full text-center outline-none bg-transparent font-bold text-indigo-600"></td>
-<td class="p-2 border-r border-slate-200 text-center"><input type="text" value="${data ? data.ctrl : 'Cal'}" class="w-full text-center outline-none bg-transparent"></td>
-<td class="p-2 border-r border-slate-200 text-center"><input type="number" value="${data ? data.vc : 100}" oninput="calculateRPM(this)" class="w-full text-center outline-none bg-transparent vc-input"></td>
-<td class="p-2 border-r border-slate-200 text-center font-bold text-indigo-700"><input type="number" value="${data ? data.rpm : 1273}" class="w-full text-center outline-none bg-transparent rpm-input"></td>
-<td class="p-2 border-r border-slate-200 text-center"><input type="text" value="${data ? data.av : '0.1'}" class="w-full text-center outline-none bg-transparent"></td>
-<td class="p-2 text-center no-print"><button onclick="this.closest('tr').remove()" class="text-slate-400 hover:text-rose-600 transition font-bold">×</button></td>
+const card = document.createElement('div');
+card.className = "bg-white text-slate-900 rounded-2xl p-3.5 shadow-xl border border-slate-200 space-y-3 relative";
+
+card.innerHTML = `
+<!-- Cabecera de la Tarjeta (Fase y Herramienta) -->
+<div class="flex items-center justify-between border-b border-slate-100 pb-2">
+<div class="flex items-center space-x-2">
+<span class="bg-indigo-600 text-white font-extrabold text-[11px] px-2.5 py-1 rounded-lg">Fase ${stepNum}</span>
+<input type="text" value="${data ? data.herr : 'T1'}" class="font-extrabold text-indigo-600 text-xs w-12 bg-indigo-50 text-center rounded py-0.5 outline-none">
+</div>
+<button onclick="this.closest('div.bg-white').remove()" class="text-slate-400 hover:text-rose-500 p-1 transition no-print">
+<i class="fa-solid fa-trash-can text-xs"></i>
+</button>
+</div>
+
+<!-- Descripción -->
+<div class="space-y-1">
+<label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Descripción</label>
+<input type="text" value="${data ? data.desc : ''}" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 outline-none focus:border-indigo-500">
+</div>
+
+<!-- Cuadrícula de Parámetros (Máq, Vc, Ø, RPM) -->
+<div class="grid grid-cols-4 gap-1.5 text-center">
+<div class="bg-slate-50 border border-slate-200 rounded-xl p-1.5">
+<span class="text-[9px] font-bold text-slate-400 block mb-0.5">MÁQ</span>
+<input type="text" value="${data ? data.maq : (currentMachine === 'Torno' ? 'TP' : 'FM')}" class="w-full text-center font-bold text-xs bg-transparent outline-none">
+</div>
+<div class="bg-slate-50 border border-slate-200 rounded-xl p-1.5">
+<span class="text-[9px] font-bold text-slate-400 block mb-0.5">VC</span>
+<input type="number" value="${data ? data.vc : 100}" oninput="calculateRPM(this)" class="w-full text-center font-bold text-xs bg-transparent outline-none vc-input">
+</div>
+<div class="bg-slate-50 border border-slate-200 rounded-xl p-1.5">
+<span class="text-[9px] font-bold text-slate-400 block mb-0.5">Ø (MM)</span>
+<input type="number" value="${data ? data.diam : 25}" oninput="calculateRPM(this)" class="w-full text-center font-bold text-xs bg-transparent outline-none diam-input">
+</div>
+<div class="bg-indigo-50/80 border border-indigo-200 rounded-xl p-1.5">
+<span class="text-[9px] font-bold text-indigo-500 block mb-0.5">RPM</span>
+<input type="number" value="${data ? data.rpm : 1273}" class="w-full text-center font-extrabold text-xs text-indigo-700 bg-transparent outline-none rpm-input">
+</div>
+</div>
+
+<!-- Control y Avance -->
+<div class="grid grid-cols-2 gap-2 pt-1">
+<div class="bg-slate-50 border border-slate-200 rounded-xl p-1.5">
+<span class="text-[9px] font-bold text-slate-400 block mb-0.5">CONTROL</span>
+<input type="text" value="${data ? data.control : 'cal'}" class="w-full text-center font-semibold text-xs bg-transparent outline-none">
+</div>
+<div class="bg-slate-50 border border-slate-200 rounded-xl p-1.5">
+<span class="text-[9px] font-bold text-slate-400 block mb-0.5">AVANCE</span>
+<input type="text" value="${data ? data.avance : '0,1'}" class="w-full text-center font-semibold text-xs bg-transparent outline-none">
+</div>
+</div>
 `;
-tbody.appendChild(row);
+container.appendChild(card);
 }
 
-function addRow() {
-appendRow();
+function addStep() {
+appendStepCard();
 }
 
-function calculateRPM(input) {
-const row = input.closest('tr');
-const vc = parseFloat(input.value) || 0;
-const rpmInput = row.querySelector('.rpm-input');
-const rpm = Math.round((vc * 1000) / (Math.PI * 25));
+function calculateRPM(element) {
+const card = element.closest('div.bg-white');
+const vc = parseFloat(card.querySelector('.vc-input').value) || 0;
+const diam = parseFloat(card.querySelector('.diam-input').value) || 1;
+const rpmInput = card.querySelector('.rpm-input');
+
+// Fórmula estándar CNC: RPM = (Vc * 1000) / (Pi * Diametro)
+const rpm = Math.round((vc * 1000) / (Math.PI * diam));
 rpmInput.value = rpm;
 }
 
 function handleImageCapture(event) {
 const file = event.target.files[0];
-if (file) {
-const reader = new FileReader();
-reader.onload = function(e) {
-document.getElementById('capturedImage').src = e.target.result;
-document.getElementById('previewContainer').classList.remove('hidden');
-
-// Al cargar la foto, simula el escaneo y carga operaciones adaptadas
-simulateAIProcessing();
-}
-reader.readAsDataURL(file);
-}
-}
-
-function clearImage() {
-document.getElementById('cameraInput').value = '';
-document.getElementById('previewContainer').classList.add('hidden');
-}
-
-function simulateAIProcessing() {
-const sampleAI = [
-{ op: 1, desc: "Refrentar cara principal", maq: currentMachine === 'Torno' ? 'TP' : 'FM', herr: "T1", ctrl: "Cal", vc: 110, rpm: 1400, av: "0.15" },
-{ op: 2, desc: "Cilindrado exterior Ø30 L=45", maq: currentMachine === 'Torno' ? 'TP' : 'FM', herr: "T2", ctrl: "Cal", vc: 120, rpm: 1273, av: "0.1" },
-{ op: 3, desc: "Ranurado de garganta Ø25", maq: currentMachine === 'Torno' ? 'TP' : 'FM', herr: "T4", ctrl: "Cal", vc: 90, rpm: 1146, av: "0.05" },
-{ op: 4, desc: "Chaflanado aristas 1x45º", maq: currentMachine === 'Torno' ? 'TP' : 'FM', herr: "T3", ctrl: "Visual", vc: 80, rpm: 1018, av: "0.1" }
+if(file) {
+// Simulación inteligente de escaneo de plano/foto estilo app
+const scannedSteps = [
+{ desc: "Refrentar y limpiar cara", maq: currentMachine === 'Torno' ? 'TP' : 'FM', vc: 110, diam: 40, rpm: 875, control: "cal", avance: "0,1", herr: "T1" },
+{ desc: "Cilindrado exterior acabado", maq: currentMachine === 'Torno' ? 'TP' : 'FM', vc: 120, diam: 30, rpm: 1273, control: "cal", avance: "0,1", herr: "T2" },
+{ desc: "Ranurado de garganta 3mm", maq: currentMachine === 'Torno' ? 'TP' : 'FM', vc: 90, diam: 25, rpm: 1146, control: "cal", avance: "0,05", herr: "T4" }
 ];
-
-const tbody = document.getElementById('operationsTableBody');
-tbody.innerHTML = '';
-sampleAI.forEach((item, idx) => appendRow(item, idx + 1));
+const container = document.getElementById('stepsContainer');
+container.innerHTML = '';
+scannedSteps.forEach((s, idx) => appendStepCard(s, idx + 1));
+}
 }
 
 document.getElementById('dateField').valueAsDate = new Date();
-loadOperations();
+renderSteps();
 </script>
 </body>
 </html>
