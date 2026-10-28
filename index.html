@@ -24,7 +24,7 @@ body { background: white !important; color: black !important; }
 <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50 px-4 py-3 flex items-center justify-between no-print">
 <div class="flex items-center space-x-3">
 <div class="bg-indigo-600 p-2 rounded-xl text-white shadow-lg shadow-indigo-500/30">
-<i class="fa-solid fa-gears text-lg animate-spin-slow"></i>
+<i class="fa-solid fa-gears text-lg"></i>
 </div>
 <div>
 <h1 class="font-bold text-base leading-tight">CNC Process Generator</h1>
@@ -44,24 +44,22 @@ body { background: white !important; color: black !important; }
 
 <!-- STEP 1: Camera & Quick AI Fill -->
 <section class="bg-gradient-to-br from-slate-900 to-slate-900/90 border border-indigo-500/30 rounded-2xl p-4 sm:p-6 shadow-xl no-print relative overflow-hidden">
-<div class="absolute -right-10 -bottom-10 w-40 h-40 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
-
 <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
 <div>
 <span class="inline-block bg-indigo-500/20 text-indigo-300 text-xs font-semibold px-2.5 py-1 rounded-full mb-2 border border-indigo-500/30">
 <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Modo Inteligente Móvil
 </span>
-<h2 class="text-lg font-bold">Toma una foto de la pieza o plano</h2>
-<p class="text-xs text-slate-400">La IA detectará las operaciones, calculará RPM/Avances y rellenará la hoja de proceso al instante.</p>
+<h2 class="text-lg font-bold">Captura o selecciona la foto de la pieza</h2>
+<p class="text-xs text-slate-400">Al seleccionar o hacer la foto, la tabla se autocompletará con las operaciones de mecanizado.</p>
 </div>
 
 <div class="flex flex-wrap gap-2 w-full sm:w-auto">
-<!-- Hidden file input for camera / gallery -->
-<input type="file" id="cameraInput" accept="image/*" capture="environment" class="hidden" onchange="handleImageCapture(event)">
+<!-- Input sin capture forzado para evitar bloqueos en Android/iOS -->
+<input type="file" id="cameraInput" accept="image/*" class="hidden" onchange="handleImageCapture(event)">
 
 <button onclick="document.getElementById('cameraInput').click()" class="flex-1 sm:flex-none bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold px-5 py-3 rounded-xl text-sm flex items-center justify-center space-x-2 shadow-lg shadow-indigo-600/30 transition transform active:scale-95">
 <i class="fa-solid fa-camera text-base"></i>
-<span>Tomar Foto / Subir Plano</span>
+<span>Hacer Foto / Subir Imagen</span>
 </button>
 </div>
 </div>
@@ -70,8 +68,8 @@ body { background: white !important; color: black !important; }
 <div id="previewContainer" class="hidden mt-4 pt-4 border-t border-slate-800 flex items-center space-x-4">
 <img id="capturedImage" src="" alt="Pieza capturada" class="w-20 h-20 object-cover rounded-xl border border-indigo-500/40">
 <div class="flex-1">
-<p class="text-xs font-medium text-emerald-400 flex items-center"><i class="fa-solid fa-circle-check mr-1.5"></i> Imagen cargada con éxito</p>
-<p class="text-xs text-slate-400 mt-0.5">Operaciones de torno/fresadora autocompletadas automáticamente.</p>
+<p class="text-xs font-medium text-emerald-400 flex items-center"><i class="fa-solid fa-circle-check mr-1.5"></i> ¡Foto procesada con éxito!</p>
+<p class="text-xs text-slate-400 mt-0.5">Operaciones y cálculos cargados en la hoja de proceso.</p>
 </div>
 <button onclick="clearImage()" class="text-slate-400 hover:text-rose-400 p-2 text-sm"><i class="fa-solid fa-trash"></i></button>
 </div>
@@ -126,7 +124,7 @@ body { background: white !important; color: black !important; }
 </div>
 </div>
 
-<!-- Machine Selector Bar (No-print) -->
+<!-- Machine Selector Bar -->
 <div class="bg-slate-200 px-4 py-2 flex items-center justify-between border-b border-slate-300 no-print text-xs">
 <span class="font-bold text-slate-700">Tipo de Máquina:</span>
 <div class="flex space-x-2">
@@ -163,7 +161,7 @@ body { background: white !important; color: black !important; }
 <i class="fa-solid fa-plus"></i>
 <span>Añadir Operación</span>
 </button>
-<span class="text-[11px] text-slate-500 font-medium">Cálculo de RPM automático ($N = \frac{Vc \times 1000}{\pi \times D}$)</span>
+<span class="text-[11px] text-slate-500 font-medium">Cálculo de RPM automático</span>
 </div>
 
 <!-- Tools Summary Footer -->
@@ -197,7 +195,6 @@ body { background: white !important; color: black !important; }
 <script>
 let currentMachine = 'Torno';
 
-// Default operations presets
 const defaultOperations = {
 Torno: [
 { op: 1, desc: "Refrentar y limpiar", maq: "TP", herr: "T3", ctrl: "Cal", vc: 100, rpm: 1273, av: "0.1" },
@@ -255,7 +252,7 @@ row.innerHTML = `
 <td class="p-2 border-r border-slate-200 text-center"><input type="number" value="${data ? data.vc : 100}" oninput="calculateRPM(this)" class="w-full text-center outline-none bg-transparent vc-input"></td>
 <td class="p-2 border-r border-slate-200 text-center font-bold text-indigo-700"><input type="number" value="${data ? data.rpm : 1273}" class="w-full text-center outline-none bg-transparent rpm-input"></td>
 <td class="p-2 border-r border-slate-200 text-center"><input type="text" value="${data ? data.av : '0.1'}" class="w-full text-center outline-none bg-transparent"></td>
-<td class="p-2 text-center no-print"><button onclick="this.closest('tr').remove()" class="text-slate-400 hover:text-rose-600 transition"><i class="fa-solid xmark">×</i></button></td>
+<td class="p-2 text-center no-print"><button onclick="this.closest('tr').remove()" class="text-slate-400 hover:text-rose-600 transition font-bold">×</button></td>
 `;
 tbody.appendChild(row);
 }
@@ -268,12 +265,10 @@ function calculateRPM(input) {
 const row = input.closest('tr');
 const vc = parseFloat(input.value) || 0;
 const rpmInput = row.querySelector('.rpm-input');
-// Cálculo aproximado estándar con diámetro medio Ø25mm para simulación automática
 const rpm = Math.round((vc * 1000) / (Math.PI * 25));
 rpmInput.value = rpm;
 }
 
-// Handle camera photo capture & instant simulation
 function handleImageCapture(event) {
 const file = event.target.files[0];
 if (file) {
@@ -282,7 +277,7 @@ reader.onload = function(e) {
 document.getElementById('capturedImage').src = e.target.result;
 document.getElementById('previewContainer').classList.remove('hidden');
 
-// Simulación IA de procesamiento de imagen en directo
+// Al cargar la foto, simula el escaneo y carga operaciones adaptadas
 simulateAIProcessing();
 }
 reader.readAsDataURL(file);
@@ -295,7 +290,6 @@ document.getElementById('previewContainer').classList.add('hidden');
 }
 
 function simulateAIProcessing() {
-// Carga dinámica personalizada simulando la lectura de la foto de la pieza
 const sampleAI = [
 { op: 1, desc: "Refrentar cara principal", maq: currentMachine === 'Torno' ? 'TP' : 'FM', herr: "T1", ctrl: "Cal", vc: 110, rpm: 1400, av: "0.15" },
 { op: 2, desc: "Cilindrado exterior Ø30 L=45", maq: currentMachine === 'Torno' ? 'TP' : 'FM', herr: "T2", ctrl: "Cal", vc: 120, rpm: 1273, av: "0.1" },
@@ -308,7 +302,6 @@ tbody.innerHTML = '';
 sampleAI.forEach((item, idx) => appendRow(item, idx + 1));
 }
 
-// Set today's date by default
 document.getElementById('dateField').valueAsDate = new Date();
 loadOperations();
 </script>
