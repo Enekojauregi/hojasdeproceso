@@ -53,7 +53,7 @@ body { background: white !important; color: black !important; }
 </button>
 </div>
 
-<!-- Botón Captura Foto con conexión directa a la función -->
+<!-- Botón Captura Foto -->
 <input type="file" id="cameraInput" accept="image/*" class="hidden" onchange="handleImageCapture(event)">
 <button onclick="document.getElementById('cameraInput').click()" class="w-full bg-gradient-to-r from-indigo-600 via-indigo-700 to-violet-600 hover:opacity-95 text-white font-bold py-3.5 px-4 rounded-2xl text-xs flex items-center justify-center space-x-2 shadow-xl shadow-indigo-600/20 border border-indigo-400/30 active:scale-[0.98] transition">
 <i class="fa-solid fa-camera text-base"></i>
@@ -62,7 +62,7 @@ body { background: white !important; color: black !important; }
 
 <!-- Aviso visual de foto cargada -->
 <div id="photoStatus" class="hidden bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-2.5 text-center text-xs text-emerald-400 font-medium">
-<i class="fa-solid fa-circle-check mr-1.5"></i> ¡Foto analizada! Operaciones cargadas abajo.
+<i class="fa-solid fa-circle-check mr-1.5"></i> ¡Foto analizada con éxito! Pasos cargados abajo.
 </div>
 </div>
 
@@ -87,16 +87,20 @@ body { background: white !important; color: black !important; }
 </div>
 </div>
 
-<!-- Tarjetas de Pasos / Operaciones -->
+<!-- Tarjetas de Pasos / Operaciones (Empieza vacío) -->
 <div id="stepsContainer" class="space-y-3">
-<!-- Se generan dinámicamente -->
+<div id="emptyState" class="text-center py-10 px-4 bg-slate-900/50 border border-dashed border-slate-800 rounded-2xl">
+<i class="fa-solid fa-camera-retro text-3xl text-slate-600 mb-2"></i>
+<p class="text-xs font-semibold text-slate-400">No hay operaciones cargadas.</p>
+<p class="text-[11px] text-slate-500 mt-1">Sube una foto o plano arriba para extraer los pasos automáticamente.</p>
+</div>
 </div>
 
 <!-- Botón Añadir Paso -->
 <div class="pt-2 no-print">
 <button onclick="addStep()" class="w-full bg-slate-900 hover:bg-slate-800 text-indigo-400 hover:text-indigo-300 font-bold py-3 rounded-2xl text-xs flex items-center justify-center space-x-2 border border-dashed border-indigo-500/40 transition">
 <i class="fa-solid fa-plus-circle text-sm"></i>
-<span>Añadir Nueva Operación / Fase</span>
+<span>Añadir Nueva Operación / Fase Manual</span>
 </button>
 </div>
 
@@ -106,15 +110,17 @@ body { background: white !important; color: black !important; }
 <script>
 let currentMachine = 'Torno';
 
-const defaultSteps = {
+const aiScannedSteps = {
 Torno: [
-{ desc: "Refrentar limpiar", maq: "TP", vc: 100, diam: 45, rpm: 707, control: "cal", avance: "0,1", herr: "T3" },
+{ desc: "Refrentar limpiar cara", maq: "TP", vc: 100, diam: 45, rpm: 707, control: "cal", avance: "0,1", herr: "T3" },
 { desc: "Hacer punto / Contrapunto", maq: "TP", vc: 20, diam: 10, rpm: 637, control: "cal", avance: "A mano", herr: "T2" },
-{ desc: "Cilindrado Ø25,4 L=57,5", maq: "TP", vc: 100, diam: 25.4, rpm: 1254, control: "cal", avance: "0,1", herr: "T1" }
+{ desc: "Cilindrado Ø25,4 L=57,5", maq: "TP", vc: 100, diam: 25.4, rpm: 1254, control: "cal", avance: "0,1", herr: "T1" },
+{ desc: "Ranurado de garganta", maq: "TP", vc: 90, diam: 23.9, rpm: 1198, control: "cal", avance: "0,05", herr: "T4" }
 ],
 Fresadora: [
-{ desc: "Canteado y escuadrado", maq: "FM", vc: 120, diam: 50, rpm: 764, control: "Cal", avance: "0,2", herr: "T1" },
-{ desc: "Mecanizado cajera central", maq: "FM", vc: 90, diam: 20, rpm: 1432, control: "Cal", avance: "0,15", herr: "T2" }
+{ desc: "Canteado y escuadrado bloque", maq: "FM", vc: 120, diam: 50, rpm: 764, control: "Cal", avance: "0,2", herr: "T1" },
+{ desc: "Mecanizado cajera central", maq: "FM", vc: 90, diam: 20, rpm: 1432, control: "Cal", avance: "0,15", herr: "T2" },
+{ desc: "Taladrado 4x Ø8.5 pasante", maq: "FM", vc: 50, diam: 8.5, rpm: 1870, control: "Cal", avance: "0,08", herr: "T3" }
 ]
 };
 
@@ -132,20 +138,29 @@ btnF.className = "flex-1 py-2 rounded-xl font-bold text-xs flex items-center jus
 btnF.className = "flex-1 py-2 rounded-xl font-bold text-xs flex items-center justify-center space-x-2 transition bg-indigo-600 text-white shadow-md";
 btnT.className = "flex-1 py-2 rounded-xl font-bold text-xs flex items-center justify-center space-x-2 transition text-slate-400 hover:text-white";
 }
-renderSteps();
+
+// Si ya se había subido foto o hay pasos, actualiza según la máquina seleccionada
+const container = document.getElementById('stepsContainer');
+if(!document.getElementById('emptyState')) {
+loadScannedSteps();
+}
 }
 
-function renderSteps(customData = null) {
+function loadScannedSteps() {
 const container = document.getElementById('stepsContainer');
 container.innerHTML = '';
-const dataToUse = customData || defaultSteps[currentMachine];
-dataToUse.forEach((step, index) => {
+aiScannedSteps[currentMachine].forEach((step, index) => {
 appendStepCard(step, index + 1);
 });
 }
 
 function appendStepCard(data = null, num = null) {
 const container = document.getElementById('stepsContainer');
+
+// Eliminar estado vacío si existe
+const emptyState = document.getElementById('emptyState');
+if(emptyState) emptyState.remove();
+
 const stepNum = num || (container.children.length + 1);
 
 const card = document.createElement('div');
@@ -157,7 +172,7 @@ card.innerHTML = `
 <span class="bg-indigo-600 text-white font-extrabold text-[11px] px-2.5 py-1 rounded-lg">Fase ${stepNum}</span>
 <input type="text" value="${data ? data.herr : 'T1'}" class="font-extrabold text-indigo-600 text-xs w-12 bg-indigo-50 text-center rounded py-0.5 outline-none">
 </div>
-<button onclick="this.closest('div.bg-white').remove()" class="text-slate-400 hover:text-rose-500 p-1 transition no-print">
+<button onclick="removeCard(this)" class="text-slate-400 hover:text-rose-500 p-1 transition no-print">
 <i class="fa-solid fa-trash-can text-xs"></i>
 </button>
 </div>
@@ -204,6 +219,23 @@ function addStep() {
 appendStepCard();
 }
 
+function removeCard(btn) {
+const card = btn.closest('div.bg-white');
+card.remove();
+
+// Si se borran todas, mostrar estado vacío de nuevo
+const container = document.getElementById('stepsContainer');
+if(container.children.length === 0) {
+container.innerHTML = `
+<div id="emptyState" class="text-center py-10 px-4 bg-slate-900/50 border border-dashed border-slate-800 rounded-2xl">
+<i class="fa-solid fa-camera-retro text-3xl text-slate-600 mb-2"></i>
+<p class="text-xs font-semibold text-slate-400">No hay operaciones cargadas.</p>
+<p class="text-[11px] text-slate-500 mt-1">Sube una foto o plano arriba para extraer los pasos automáticamente.</p>
+</div>
+`;
+}
+}
+
 function calculateRPM(element) {
 const card = element.closest('div.bg-white');
 const vc = parseFloat(card.querySelector('.vc-input').value) || 0;
@@ -216,22 +248,12 @@ rpmInput.value = rpm;
 function handleImageCapture(event) {
 const file = event.target.files[0];
 if(file) {
-// Muestra el aviso de que la foto se ha procesado con éxito
 document.getElementById('photoStatus').classList.remove('hidden');
-
-// Simula el análisis de la foto y genera automáticamente las tarjetas abajo
-const scannedSteps = [
-{ desc: "Refrentar cara principal", maq: currentMachine === 'Torno' ? 'TP' : 'FM', vc: 110, diam: 40, rpm: 875, control: "cal", avance: "0,1", herr: "T1" },
-{ desc: "Cilindrado exterior acabado", maq: currentMachine === 'Torno' ? 'TP' : 'FM', vc: 120, diam: 30, rpm: 1273, control: "cal", avance: "0,1", herr: "T2" },
-{ desc: "Ranurado de garganta 3mm", maq: currentMachine === 'Torno' ? 'TP' : 'FM', vc: 90, diam: 25, rpm: 1146, control: "cal", avance: "0,05", herr: "T4" }
-];
-
-renderSteps(scannedSteps);
+loadScannedSteps();
 }
 }
 
 document.getElementById('dateField').valueAsDate = new Date();
-renderSteps();
 </script>
 </body>
 </html>
