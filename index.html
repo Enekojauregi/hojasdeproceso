@@ -13,13 +13,12 @@ body { font-family: 'Plus Jakarta Sans', sans-serif; }
 @media print {
 .no-print { display: none !important; }
 body { background: white !important; color: black !important; }
-.print-container { box-shadow: none !important; border: none !important; }
 }
 </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col pb-20">
 
-<!-- Header / Navbar estilo App -->
+<!-- Header -->
 <header class="bg-slate-900/90 backdrop-blur border-b border-slate-800 sticky top-0 z-50 px-4 py-3 flex items-center justify-between no-print">
 <div class="flex items-center space-x-2.5">
 <div class="bg-gradient-to-tr from-indigo-600 to-violet-500 p-2 rounded-xl text-white shadow-lg shadow-indigo-500/30">
@@ -33,11 +32,9 @@ body { background: white !important; color: black !important; }
 <p class="text-[11px] text-slate-400">Generador Inteligente por Foto</p>
 </div>
 </div>
-<div class="flex items-center space-x-2">
-<button onclick="window.print()" class="bg-indigo-600 hover:bg-indigo-500 text-white p-2.5 rounded-xl text-xs font-semibold flex items-center justify-center shadow-lg shadow-indigo-600/30 transition">
+<button onclick="window.print()" class="bg-indigo-600 hover:bg-indigo-500 text-white p-2.5 rounded-xl text-xs font-semibold shadow-lg shadow-indigo-600/30 transition">
 <i class="fa-solid fa-file-pdf text-sm"></i>
 </button>
-</div>
 </header>
 
 <!-- Main Container -->
@@ -56,12 +53,17 @@ body { background: white !important; color: black !important; }
 </button>
 </div>
 
-<!-- Botón Captura Foto -->
+<!-- Botón Captura Foto con conexión directa a la función -->
 <input type="file" id="cameraInput" accept="image/*" class="hidden" onchange="handleImageCapture(event)">
 <button onclick="document.getElementById('cameraInput').click()" class="w-full bg-gradient-to-r from-indigo-600 via-indigo-700 to-violet-600 hover:opacity-95 text-white font-bold py-3.5 px-4 rounded-2xl text-xs flex items-center justify-center space-x-2 shadow-xl shadow-indigo-600/20 border border-indigo-400/30 active:scale-[0.98] transition">
 <i class="fa-solid fa-camera text-base"></i>
 <span>Tirar Foto al Plano / Pieza (Auto-Relleno)</span>
 </button>
+
+<!-- Aviso visual de foto cargada -->
+<div id="photoStatus" class="hidden bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-2.5 text-center text-xs text-emerald-400 font-medium">
+<i class="fa-solid fa-circle-check mr-1.5"></i> ¡Foto analizada! Operaciones cargadas abajo.
+</div>
 </div>
 
 <!-- Información Cabecera Hoja -->
@@ -85,9 +87,9 @@ body { background: white !important; color: black !important; }
 </div>
 </div>
 
-<!-- Tarjetas de Pasos / Operaciones (Estilo app móvil solicitado) -->
+<!-- Tarjetas de Pasos / Operaciones -->
 <div id="stepsContainer" class="space-y-3">
-<!-- Las tarjetas se generan dinámicamente aquí -->
+<!-- Se generan dinámicamente -->
 </div>
 
 <!-- Botón Añadir Paso -->
@@ -100,7 +102,7 @@ body { background: white !important; color: black !important; }
 
 </main>
 
-<!-- Script de Gestión e Interfaz -->
+<!-- Script -->
 <script>
 let currentMachine = 'Torno';
 
@@ -133,10 +135,11 @@ btnT.className = "flex-1 py-2 rounded-xl font-bold text-xs flex items-center jus
 renderSteps();
 }
 
-function renderSteps() {
+function renderSteps(customData = null) {
 const container = document.getElementById('stepsContainer');
 container.innerHTML = '';
-defaultSteps[currentMachine].forEach((step, index) => {
+const dataToUse = customData || defaultSteps[currentMachine];
+dataToUse.forEach((step, index) => {
 appendStepCard(step, index + 1);
 });
 }
@@ -149,7 +152,6 @@ const card = document.createElement('div');
 card.className = "bg-white text-slate-900 rounded-2xl p-3.5 shadow-xl border border-slate-200 space-y-3 relative";
 
 card.innerHTML = `
-<!-- Cabecera de la Tarjeta (Fase y Herramienta) -->
 <div class="flex items-center justify-between border-b border-slate-100 pb-2">
 <div class="flex items-center space-x-2">
 <span class="bg-indigo-600 text-white font-extrabold text-[11px] px-2.5 py-1 rounded-lg">Fase ${stepNum}</span>
@@ -160,13 +162,11 @@ card.innerHTML = `
 </button>
 </div>
 
-<!-- Descripción -->
 <div class="space-y-1">
 <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Descripción</label>
 <input type="text" value="${data ? data.desc : ''}" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 outline-none focus:border-indigo-500">
 </div>
 
-<!-- Cuadrícula de Parámetros (Máq, Vc, Ø, RPM) -->
 <div class="grid grid-cols-4 gap-1.5 text-center">
 <div class="bg-slate-50 border border-slate-200 rounded-xl p-1.5">
 <span class="text-[9px] font-bold text-slate-400 block mb-0.5">MÁQ</span>
@@ -186,7 +186,6 @@ card.innerHTML = `
 </div>
 </div>
 
-<!-- Control y Avance -->
 <div class="grid grid-cols-2 gap-2 pt-1">
 <div class="bg-slate-50 border border-slate-200 rounded-xl p-1.5">
 <span class="text-[9px] font-bold text-slate-400 block mb-0.5">CONTROL</span>
@@ -210,8 +209,6 @@ const card = element.closest('div.bg-white');
 const vc = parseFloat(card.querySelector('.vc-input').value) || 0;
 const diam = parseFloat(card.querySelector('.diam-input').value) || 1;
 const rpmInput = card.querySelector('.rpm-input');
-
-// Fórmula estándar CNC: RPM = (Vc * 1000) / (Pi * Diametro)
 const rpm = Math.round((vc * 1000) / (Math.PI * diam));
 rpmInput.value = rpm;
 }
@@ -219,15 +216,17 @@ rpmInput.value = rpm;
 function handleImageCapture(event) {
 const file = event.target.files[0];
 if(file) {
-// Simulación inteligente de escaneo de plano/foto estilo app
+// Muestra el aviso de que la foto se ha procesado con éxito
+document.getElementById('photoStatus').classList.remove('hidden');
+
+// Simula el análisis de la foto y genera automáticamente las tarjetas abajo
 const scannedSteps = [
-{ desc: "Refrentar y limpiar cara", maq: currentMachine === 'Torno' ? 'TP' : 'FM', vc: 110, diam: 40, rpm: 875, control: "cal", avance: "0,1", herr: "T1" },
+{ desc: "Refrentar cara principal", maq: currentMachine === 'Torno' ? 'TP' : 'FM', vc: 110, diam: 40, rpm: 875, control: "cal", avance: "0,1", herr: "T1" },
 { desc: "Cilindrado exterior acabado", maq: currentMachine === 'Torno' ? 'TP' : 'FM', vc: 120, diam: 30, rpm: 1273, control: "cal", avance: "0,1", herr: "T2" },
 { desc: "Ranurado de garganta 3mm", maq: currentMachine === 'Torno' ? 'TP' : 'FM', vc: 90, diam: 25, rpm: 1146, control: "cal", avance: "0,05", herr: "T4" }
 ];
-const container = document.getElementById('stepsContainer');
-container.innerHTML = '';
-scannedSteps.forEach((s, idx) => appendStepCard(s, idx + 1));
+
+renderSteps(scannedSteps);
 }
 }
 
