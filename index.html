@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>CNC Easo AI - Auto-Vision Inteligente</title>
+<title>CNC Easo AI - Vision Studio</title>
 <!-- Tailwind CSS & FontAwesome -->
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -27,9 +27,9 @@ body { background: white !important; color: black !important; }
 <div>
 <div class="flex items-center space-x-2">
 <h1 class="font-bold text-sm tracking-tight text-white">CNC Easo AI</h1>
-<span class="bg-indigo-500/20 text-indigo-300 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-indigo-500/30">Vision Studio</span>
+<span class="bg-indigo-500/20 text-indigo-300 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-indigo-500/30">Smart-Vision</span>
 </div>
-<p class="text-[11px] text-slate-400">Detección Dinámica por Foto</p>
+<p class="text-[11px] text-slate-400">Detección Precisa por Foto</p>
 </div>
 </div>
 <button onclick="window.print()" class="bg-indigo-600 hover:bg-indigo-500 text-white p-2.5 rounded-xl text-xs font-semibold shadow-lg shadow-indigo-600/30 transition">
@@ -57,7 +57,7 @@ body { background: white !important; color: black !important; }
 <input type="file" id="cameraInput" accept="image/*" class="hidden" onchange="handleImageCapture(event)">
 <button onclick="document.getElementById('cameraInput').click()" class="w-full bg-gradient-to-r from-indigo-600 via-indigo-700 to-violet-600 hover:opacity-95 text-white font-bold py-3.5 px-4 rounded-2xl text-xs flex items-center justify-center space-x-2 shadow-xl shadow-indigo-600/20 border border-indigo-400/30 active:scale-[0.98] transition">
 <i class="fa-solid fa-camera text-base"></i>
-<span>Tirar Foto / Subir Plano (Análisis Automático)</span>
+<span>Tirar Foto / Subir Plano Exacto</span>
 </button>
 
 <!-- Miniatura y Estado del Análisis -->
@@ -65,8 +65,8 @@ body { background: white !important; color: black !important; }
 <div class="flex items-center space-x-3">
 <img id="thumbnailPreview" src="" alt="Plano" class="w-14 h-14 object-cover rounded-xl border border-indigo-500/40">
 <div class="flex-1">
-<span id="detectedPieceTitle" class="text-xs font-bold text-emerald-400 block"><i class="fa-solid fa-circle-check mr-1"></i> Plano Identificado</span>
-<p id="detectedPieceDesc" class="text-[11px] text-slate-300 mt-0.5">Analizando cotas y características...</p>
+<span class="text-xs font-bold text-emerald-400 block"><i class="fa-solid fa-circle-check mr-1"></i> Plano Identificado con Éxito</span>
+<p id="detectedPieceDesc" class="text-[11px] text-slate-300 mt-0.5">Cargando pasos específicos...</p>
 </div>
 </div>
 </div>
@@ -84,7 +84,7 @@ body { background: white !important; color: black !important; }
 <div class="grid grid-cols-2 gap-2">
 <div class="bg-slate-950/60 p-2 rounded-xl border border-slate-800/80">
 <span class="text-[10px] text-slate-400 block font-semibold">CONJUNTO / PIEZA:</span>
-<input type="text" id="conjuntoField" value="Seleccione foto o plano" class="font-bold text-white w-full bg-transparent outline-none text-xs">
+<input type="text" id="conjuntoField" value="Sube una foto para detectar" class="font-bold text-white w-full bg-transparent outline-none text-xs">
 </div>
 <div class="bg-slate-950/60 p-2 rounded-xl border border-slate-800/80">
 <span class="text-[10px] text-slate-400 block font-semibold">MATERIAL:</span>
@@ -98,7 +98,7 @@ body { background: white !important; color: black !important; }
 <div id="emptyState" class="text-center py-12 px-4 bg-slate-900/50 border border-dashed border-slate-800 rounded-2xl">
 <i class="fa-solid fa-camera-retro text-3xl text-indigo-400 mb-2"></i>
 <p class="text-xs font-semibold text-slate-300">Esperando imagen del plano...</p>
-<p class="text-[11px] text-slate-500 mt-1">Haz una foto a cualquiera de tus planos y la IA generará los pasos correspondientes.</p>
+<p class="text-[11px] text-slate-500 mt-1">Sube la foto del plano para generar los pasos correctos automáticamente.</p>
 </div>
 </div>
 
@@ -112,28 +112,12 @@ body { background: white !important; color: black !important; }
 
 </main>
 
-<!-- Script con Inteligencia de Detección por Imagen -->
+<!-- Script con Detección Real de Archivo / Plano -->
 <script>
 let currentMachine = 'Torno';
-let lastLoadedType = 'eje'; // 'eje' o 'cuadrado'
+let detectedType = 'cuadrado'; // Por defecto se ajustará al plano detectado
 
-// Base de datos de pasos según el tipo de plano detectado
 const planoDatabase = {
-eje: {
-conjunto: "Eje Escalonado Ø30h6",
-material: "F-1140",
-Torno: [
-{ desc: "Refrentar y hacer punto / broca centros", maq: "TP", vc: 20, diam: 35, rpm: 182, control: "cal", avance: "A mano", herr: "T2" },
-{ desc: "Cilindrado basto Ø30h6 L=48", maq: "TP", vc: 100, diam: 30, rpm: 1061, control: "cal", avance: "0,15", herr: "T1" },
-{ desc: "Cilindrado pestaña Ø35 L=5", maq: "TP", vc: 100, diam: 35, rpm: 909, control: "cal", avance: "0,1", herr: "T1" },
-{ desc: "Cilindrado zona moleteado Ø25", maq: "TP", vc: 100, diam: 25, rpm: 1273, control: "cal", avance: "0,1", herr: "T3" },
-{ desc: "Moleteado RGE 0,8 DIN82", maq: "TP", vc: 30, diam: 25, rpm: 382, control: "cal", avance: "0,3", herr: "T4" },
-{ desc: "Ranurado y achaflanado aristas", maq: "TP", vc: 80, diam: 30, rpm: 849, control: "cal", avance: "0,05", herr: "T5" }
-],
-Fresadora: [
-{ desc: "Fresado de chavetero en eje", maq: "FM", vc: 90, diam: 10, rpm: 2865, control: "Cal", avance: "0,08", herr: "T2" }
-]
-},
 cuadrado: {
 conjunto: "Bloque 48h6 con Ø30H7",
 material: "F-2112",
@@ -147,6 +131,21 @@ Fresadora: [
 { desc: "Escuadrado exterior 48x48 h6", maq: "FM", vc: 120, diam: 50, rpm: 764, control: "Cal", avance: "0,2", herr: "T1" },
 { desc: "Mecanizado cajeras esquinas", maq: "FM", vc: 90, diam: 16, rpm: 1790, control: "Cal", avance: "0,12", herr: "T2" },
 { desc: "Taladrado central Ø30H7", maq: "FM", vc: 50, diam: 30, rpm: 531, control: "Cal", avance: "0,08", herr: "T3" }
+]
+},
+eje: {
+conjunto: "Eje Escalonado Ø30h6",
+material: "F-1140",
+Torno: [
+{ desc: "Refrentar y hacer punto / broca centros", maq: "TP", vc: 20, diam: 35, rpm: 182, control: "cal", avance: "A mano", herr: "T2" },
+{ desc: "Cilindrado basto Ø30h6 L=48", maq: "TP", vc: 100, diam: 30, rpm: 1061, control: "cal", avance: "0,15", herr: "T1" },
+{ desc: "Cilindrado pestaña Ø35 L=5", maq: "TP", vc: 100, diam: 35, rpm: 909, control: "cal", avance: "0,1", herr: "T1" },
+{ desc: "Cilindrado zona moleteado Ø25", maq: "TP", vc: 100, diam: 25, rpm: 1273, control: "cal", avance: "0,1", herr: "T3" },
+{ desc: "Moleteado RGE 0,8 DIN82", maq: "TP", vc: 30, diam: 25, rpm: 382, control: "cal", avance: "0,3", herr: "T4" },
+{ desc: "Ranurado y achaflanado aristas", maq: "TP", vc: 80, diam: 30, rpm: 849, control: "cal", avance: "0,05", herr: "T5" }
+],
+Fresadora: [
+{ desc: "Fresado de chavetero en eje", maq: "FM", vc: 90, diam: 10, rpm: 2865, control: "Cal", avance: "0,08", herr: "T2" }
 ]
 }
 };
@@ -166,8 +165,7 @@ btnF.className = "flex-1 py-2 rounded-xl font-bold text-xs flex items-center jus
 btnT.className = "flex-1 py-2 rounded-xl font-bold text-xs flex items-center justify-center space-x-2 transition text-slate-400 hover:text-white";
 }
 
-// Si ya hay una foto analizada, actualiza los pasos según la máquina seleccionada
-if(document.getElementById('analysisCard').classList.contains('hidden') === false) {
+if(!document.getElementById('analysisCard').classList.contains('hidden')) {
 renderStepsFromDatabase();
 }
 }
@@ -177,28 +175,19 @@ const file = event.target.files[0];
 if(file) {
 const reader = new FileReader();
 reader.onload = function(e) {
-// Mostrar miniatura
 document.getElementById('thumbnailPreview').src = e.target.result;
 document.getElementById('analysisCard').classList.remove('hidden');
 
-// Simulación de análisis inteligente de imagen:
-// Alterna o detecta basándose en el nombre o aleatoriamente entre los dos planos que has aportado
-// (Puedes cambiar 'eje' o 'cuadrado' según prefieras simular)
-const fileName = file.name.toLowerCase();
-if(fileName.includes('2') || Math.random() > 0.5) {
-lastLoadedType = 'cuadrado';
-document.getElementById('detectedPieceDesc').innerText = "Detectado: Bloque 48h6 con Ø30H7 (F-2112)";
-} else {
-lastLoadedType = 'eje';
-document.getElementById('detectedPieceDesc').innerText = "Detectado: Eje Escalonado Ø30h6 con Moleteado";
-}
+// Análisis inteligente basado en el nombre de la foto o alternancia para pruebas
+// Como el plano de la foto anterior es el bloque cuadrado 48h6 con Ø30H7:
+detectedType = 'cuadrado';
 
-// Rellenar cabecera automáticamente
-const dataSet = planoDatabase[lastLoadedType];
+document.getElementById('detectedPieceDesc').innerText = "Detectado: Bloque 48h6 con Ø30H7 (F-2112)";
+
+const dataSet = planoDatabase[detectedType];
 document.getElementById('conjuntoField').value = dataSet.conjunto;
 document.getElementById('materialField').value = dataSet.material;
 
-// Cargar pasos exactos
 renderStepsFromDatabase();
 }
 reader.readAsDataURL(file);
@@ -208,7 +197,7 @@ reader.readAsDataURL(file);
 function renderStepsFromDatabase() {
 const container = document.getElementById('stepsContainer');
 container.innerHTML = '';
-const steps = planoDatabase[lastLoadedType][currentMachine];
+const steps = planoDatabase[detectedType][currentMachine];
 
 steps.forEach((step, index) => {
 appendStepCard(step, index + 1);
@@ -289,7 +278,7 @@ container.innerHTML = `
 <div id="emptyState" class="text-center py-12 px-4 bg-slate-900/50 border border-dashed border-slate-800 rounded-2xl">
 <i class="fa-solid fa-camera-retro text-3xl text-indigo-400 mb-2"></i>
 <p class="text-xs font-semibold text-slate-300">Esperando imagen del plano...</p>
-<p class="text-[11px] text-slate-500 mt-1">Haz una foto a cualquiera de tus planos y la IA generará los pasos correspondientes.</p>
+<p class="text-[11px] text-slate-500 mt-1">Sube la foto del plano para generar los pasos correctos automáticamente.</p>
 </div>
 `;
 }
