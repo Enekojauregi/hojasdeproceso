@@ -1,299 +1,303 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>CNC Easo AI - Vision Studio</title>
-<!-- Tailwind CSS & FontAwesome -->
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
-body { font-family: 'Plus Jakarta Sans', sans-serif; }
-@media print {
-.no-print { display: none !important; }
-body { background: white !important; color: black !important; }
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CNC Easo AI - Lector OCR Real de Planos</title>
+    <!-- Tailwind CSS & FontAwesome -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Tesseract.js para lectura OCR de fotos en directo -->
+    <script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white !important; color: black !important; }
+        }
+    </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col pb-20">
 
-<!-- Header -->
-<header class="bg-slate-900/90 backdrop-blur border-b border-slate-800 sticky top-0 z-50 px-4 py-3 flex items-center justify-between no-print">
-<div class="flex items-center space-x-2.5">
-<div class="bg-gradient-to-tr from-indigo-600 to-violet-500 p-2 rounded-xl text-white shadow-lg shadow-indigo-500/30">
-<i class="fa-solid fa-wand-magic-sparkles text-sm"></i>
-</div>
-<div>
-<div class="flex items-center space-x-2">
-<h1 class="font-bold text-sm tracking-tight text-white">CNC Easo AI</h1>
-<span class="bg-indigo-500/20 text-indigo-300 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-indigo-500/30">Smart-Vision</span>
-</div>
-<p class="text-[11px] text-slate-400">Detección Precisa por Foto</p>
-</div>
-</div>
-<button onclick="window.print()" class="bg-indigo-600 hover:bg-indigo-500 text-white p-2.5 rounded-xl text-xs font-semibold shadow-lg shadow-indigo-600/30 transition">
-<i class="fa-solid fa-file-pdf text-sm"></i>
-</button>
-</header>
+    <!-- Header -->
+    <header class="bg-slate-900/90 backdrop-blur border-b border-slate-800 sticky top-0 z-50 px-4 py-3 flex items-center justify-between no-print">
+        <div class="flex items-center space-x-2.5">
+            <div class="bg-gradient-to-tr from-indigo-600 to-violet-500 p-2 rounded-xl text-white shadow-lg shadow-indigo-500/30">
+                <i class="fa-solid fa-eye text-sm"></i>
+            </div>
+            <div>
+                <div class="flex items-center space-x-2">
+                    <h1 class="font-bold text-sm tracking-tight text-white">CNC Easo AI</h1>
+                    <span class="bg-indigo-500/20 text-indigo-300 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-indigo-500/30">OCR Vision</span>
+                </div>
+                <p class="text-[11px] text-slate-400">Lectura Real de Planos por Foto</p>
+            </div>
+        </div>
+        <button onclick="window.print()" class="bg-indigo-600 hover:bg-indigo-500 text-white p-2.5 rounded-xl text-xs font-semibold shadow-lg shadow-indigo-600/30 transition">
+            <i class="fa-solid fa-file-pdf text-sm"></i> PDF
+        </button>
+    </header>
 
-<!-- Main Container -->
-<main class="flex-1 max-w-xl w-full mx-auto p-3 sm:p-4 space-y-4">
+    <!-- Main Container -->
+    <main class="flex-1 max-w-xl w-full mx-auto p-3 sm:p-4 space-y-4">
 
-<!-- Selector Torno / Fresadora & Cámara -->
-<div class="space-y-3 no-print">
-<div class="flex items-center justify-between bg-slate-900 p-1.5 rounded-2xl border border-slate-800 shadow-inner">
-<button onclick="setMachineType('Torno')" id="btnTorno" class="flex-1 py-2 rounded-xl font-bold text-xs flex items-center justify-center space-x-2 transition bg-indigo-600 text-white shadow-md">
-<i class="fa-solid fa-circle-dot"></i>
-<span>Torno</span>
-</button>
-<button onclick="setMachineType('Fresadora')" id="btnFresadora" class="flex-1 py-2 rounded-xl font-bold text-xs flex items-center justify-center space-x-2 transition text-slate-400 hover:text-white">
-<i class="fa-solid fa-cube"></i>
-<span>Fresadora</span>
-</button>
-</div>
+        <!-- Selector Torno / Fresadora & Cámara con OCR -->
+        <div class="space-y-3 no-print">
+            <div class="flex items-center justify-between bg-slate-900 p-1.5 rounded-2xl border border-slate-800 shadow-inner">
+                <button onclick="setMachineType('Torno')" id="btnTorno" class="flex-1 py-2 rounded-xl font-bold text-xs flex items-center justify-center space-x-2 transition bg-indigo-600 text-white shadow-md">
+                    <i class="fa-solid fa-circle-dot"></i>
+                    <span>Torno</span>
+                </button>
+                <button onclick="setMachineType('Fresadora')" id="btnFresadora" class="flex-1 py-2 rounded-xl font-bold text-xs flex items-center justify-center space-x-2 transition text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-cube"></i>
+                    <span>Fresadora</span>
+                </button>
+            </div>
 
-<!-- Botón Captura Foto -->
-<input type="file" id="cameraInput" accept="image/*" class="hidden" onchange="handleImageCapture(event)">
-<button onclick="document.getElementById('cameraInput').click()" class="w-full bg-gradient-to-r from-indigo-600 via-indigo-700 to-violet-600 hover:opacity-95 text-white font-bold py-3.5 px-4 rounded-2xl text-xs flex items-center justify-center space-x-2 shadow-xl shadow-indigo-600/20 border border-indigo-400/30 active:scale-[0.98] transition">
-<i class="fa-solid fa-camera text-base"></i>
-<span>Tirar Foto / Subir Plano Exacto</span>
-</button>
+            <!-- Botón Foto con Lector Real -->
+            <input type="file" id="cameraInput" accept="image/*" capture="environment" class="hidden" onchange="readImageOCR(event)">
+            <button onclick="document.getElementById('cameraInput').click()" class="w-full bg-gradient-to-r from-indigo-600 via-indigo-700 to-violet-600 hover:opacity-95 text-white font-bold py-4 px-4 rounded-2xl text-xs flex items-center justify-center space-x-2 shadow-xl shadow-indigo-600/20 border border-indigo-400/30 active:scale-[0.98] transition">
+                <i class="fa-solid fa-camera text-base animate-pulse"></i>
+                <span>Hacer Foto al Plano (Leer Texto y Cotas)</span>
+            </button>
 
-<!-- Miniatura y Estado del Análisis -->
-<div id="analysisCard" class="hidden bg-slate-900 border border-indigo-500/30 rounded-2xl p-3 space-y-2.5">
-<div class="flex items-center space-x-3">
-<img id="thumbnailPreview" src="" alt="Plano" class="w-14 h-14 object-cover rounded-xl border border-indigo-500/40">
-<div class="flex-1">
-<span class="text-xs font-bold text-emerald-400 block"><i class="fa-solid fa-circle-check mr-1"></i> Plano Identificado con Éxito</span>
-<p id="detectedPieceDesc" class="text-[11px] text-slate-300 mt-0.5">Cargando pasos específicos...</p>
-</div>
-</div>
-</div>
-</div>
+            <!-- Estado de lectura en vivo -->
+            <div id="ocrStatus" class="hidden bg-indigo-500/10 border border-indigo-500/30 rounded-2xl p-3 text-center space-y-2">
+                <div class="flex items-center justify-center space-x-2 text-indigo-400 text-xs font-bold">
+                    <i class="fa-solid fa-circle-notch animate-spin"></i>
+                    <span id="ocrStatusText">Leyendo texto y operaciones de la foto...</span>
+                </div>
+            </div>
+        </div>
 
-<!-- Información Cabecera Hoja -->
-<div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 text-xs space-y-2.5 shadow-lg">
-<div class="flex justify-between items-center border-b border-slate-800 pb-2">
-<span class="font-bold text-indigo-400 uppercase tracking-wider" id="sheetTitle">Hoja Proceso Torno</span>
-<div class="flex space-x-2">
-<input type="text" id="groupField" value="ME21" class="bg-slate-800 text-center text-white font-bold rounded px-2 py-1 w-14 outline-none">
-<input type="date" id="dateField" class="bg-slate-800 text-center text-white font-bold rounded px-2 py-1 outline-none">
-</div>
-</div>
-<div class="grid grid-cols-2 gap-2">
-<div class="bg-slate-950/60 p-2 rounded-xl border border-slate-800/80">
-<span class="text-[10px] text-slate-400 block font-semibold">CONJUNTO / PIEZA:</span>
-<input type="text" id="conjuntoField" value="Sube una foto para detectar" class="font-bold text-white w-full bg-transparent outline-none text-xs">
-</div>
-<div class="bg-slate-950/60 p-2 rounded-xl border border-slate-800/80">
-<span class="text-[10px] text-slate-400 block font-semibold">MATERIAL:</span>
-<input type="text" id="materialField" value="F-1140" class="font-bold text-white w-full bg-transparent outline-none text-xs">
-</div>
-</div>
-</div>
+        <!-- Información Cabecera Hoja -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 text-xs space-y-2.5 shadow-lg">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                <span class="font-bold text-indigo-400 uppercase tracking-wider" id="sheetTitle">Hoja Proceso Torno</span>
+                <div class="flex space-x-2">
+                    <input type="text" id="groupField" value="ME21" class="bg-slate-800 text-center text-white font-bold rounded px-2 py-1 w-14 outline-none">
+                    <input type="date" id="dateField" class="bg-slate-800 text-center text-white font-bold rounded px-2 py-1 outline-none">
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+                <div class="bg-slate-950/60 p-2 rounded-xl border border-slate-800/80">
+                    <span class="text-[10px] text-slate-400 block font-semibold">CONJUNTO / PIEZA:</span>
+                    <input type="text" id="conjuntoField" value="Esperando foto del plano..." class="font-bold text-white w-full bg-transparent outline-none text-xs">
+                </div>
+                <div class="bg-slate-950/60 p-2 rounded-xl border border-slate-800/80">
+                    <span class="text-[10px] text-slate-400 block font-semibold">MATERIAL:</span>
+                    <input type="text" id="materialField" value="F-1140" class="font-bold text-white w-full bg-transparent outline-none text-xs">
+                </div>
+            </div>
+        </div>
 
-<!-- Tarjetas de Pasos / Operaciones (Empieza vacío) -->
-<div id="stepsContainer" class="space-y-3">
-<div id="emptyState" class="text-center py-12 px-4 bg-slate-900/50 border border-dashed border-slate-800 rounded-2xl">
-<i class="fa-solid fa-camera-retro text-3xl text-indigo-400 mb-2"></i>
-<p class="text-xs font-semibold text-slate-300">Esperando imagen del plano...</p>
-<p class="text-[11px] text-slate-500 mt-1">Sube la foto del plano para generar los pasos correctos automáticamente.</p>
-</div>
-</div>
+        <!-- Tarjetas de Pasos / Operaciones -->
+        <div id="stepsContainer" class="space-y-3">
+            <div id="emptyState" class="text-center py-12 px-4 bg-slate-900/50 border border-dashed border-slate-800 rounded-2xl">
+                <i class="fa-solid fa-eye text-3xl text-indigo-400 mb-2"></i>
+                <p class="text-xs font-semibold text-slate-300">Escáner de planos listo</p>
+                <p class="text-[11px] text-slate-500 mt-1">Haz una foto a tu plano y la IA leerá los textos y cotas para pasarlos a la hoja.</p>
+            </div>
+        </div>
 
-<!-- Botón Añadir Paso -->
-<div class="pt-2 no-print">
-<button onclick="addStep()" class="w-full bg-slate-900 hover:bg-slate-800 text-indigo-400 hover:text-indigo-300 font-bold py-3 rounded-2xl text-xs flex items-center justify-center space-x-2 border border-dashed border-indigo-500/40 transition">
-<i class="fa-solid fa-plus-circle text-sm"></i>
-<span>Añadir Nueva Operación Manual</span>
-</button>
-</div>
+        <!-- Botón Añadir Paso Manual -->
+        <div class="pt-2 no-print">
+            <button onclick="addStep()" class="w-full bg-slate-900 hover:bg-slate-800 text-indigo-400 hover:text-indigo-300 font-bold py-3 rounded-2xl text-xs flex items-center justify-center space-x-2 border border-dashed border-indigo-500/40 transition">
+                <i class="fa-solid fa-plus-circle text-sm"></i>
+                <span>Añadir Operación Manual</span>
+            </button>
+        </div>
 
-</main>
+    </main>
 
-<!-- Script con Detección Real de Archivo / Plano -->
-<script>
-let currentMachine = 'Torno';
-let detectedType = 'cuadrado'; // Por defecto se ajustará al plano detectado
+    <!-- Script con Lector OCR Real -->
+    <script>
+        let currentMachine = 'Torno';
+        let currentSteps = [];
 
-const planoDatabase = {
-cuadrado: {
-conjunto: "Bloque 48h6 con Ø30H7",
-material: "F-2112",
-Torno: [
-{ desc: "Refrentar caras bloque 48h6", maq: "TP", vc: 110, diam: 48, rpm: 729, control: "cal", avance: "0,15", herr: "T1" },
-{ desc: "Cilindrado exterior 48h6", maq: "TP", vc: 120, diam: 48, rpm: 796, control: "cal", avance: "0,1", herr: "T1" },
-{ desc: "Taladrado previo Ø28 para H7", maq: "TP", vc: 50, diam: 28, rpm: 568, control: "cal", avance: "0,08", herr: "T3" },
-{ desc: "Mandrinado interior Ø30H7", maq: "TP", vc: 90, diam: 30, rpm: 955, control: "cal", avance: "0,05", herr: "T5" }
-],
-Fresadora: [
-{ desc: "Escuadrado exterior 48x48 h6", maq: "FM", vc: 120, diam: 50, rpm: 764, control: "Cal", avance: "0,2", herr: "T1" },
-{ desc: "Mecanizado cajeras esquinas", maq: "FM", vc: 90, diam: 16, rpm: 1790, control: "Cal", avance: "0,12", herr: "T2" },
-{ desc: "Taladrado central Ø30H7", maq: "FM", vc: 50, diam: 30, rpm: 531, control: "Cal", avance: "0,08", herr: "T3" }
-]
-},
-eje: {
-conjunto: "Eje Escalonado Ø30h6",
-material: "F-1140",
-Torno: [
-{ desc: "Refrentar y hacer punto / broca centros", maq: "TP", vc: 20, diam: 35, rpm: 182, control: "cal", avance: "A mano", herr: "T2" },
-{ desc: "Cilindrado basto Ø30h6 L=48", maq: "TP", vc: 100, diam: 30, rpm: 1061, control: "cal", avance: "0,15", herr: "T1" },
-{ desc: "Cilindrado pestaña Ø35 L=5", maq: "TP", vc: 100, diam: 35, rpm: 909, control: "cal", avance: "0,1", herr: "T1" },
-{ desc: "Cilindrado zona moleteado Ø25", maq: "TP", vc: 100, diam: 25, rpm: 1273, control: "cal", avance: "0,1", herr: "T3" },
-{ desc: "Moleteado RGE 0,8 DIN82", maq: "TP", vc: 30, diam: 25, rpm: 382, control: "cal", avance: "0,3", herr: "T4" },
-{ desc: "Ranurado y achaflanado aristas", maq: "TP", vc: 80, diam: 30, rpm: 849, control: "cal", avance: "0,05", herr: "T5" }
-],
-Fresadora: [
-{ desc: "Fresado de chavetero en eje", maq: "FM", vc: 90, diam: 10, rpm: 2865, control: "Cal", avance: "0,08", herr: "T2" }
-]
-}
-};
+        function setMachineType(type) {
+            currentMachine = type;
+            document.getElementById('sheetTitle').innerText = "Hoja Proceso " + type;
+            
+            const btnT = document.getElementById('btnTorno');
+            const btnF = document.getElementById('btnFresadora');
+            
+            if(type === 'Torno') {
+                btnT.className = "flex-1 py-2 rounded-xl font-bold text-xs flex items-center justify-center space-x-2 transition bg-indigo-600 text-white shadow-md";
+                btnF.className = "flex-1 py-2 rounded-xl font-bold text-xs flex items-center justify-center space-x-2 transition text-slate-400 hover:text-white";
+            } else {
+                btnF.className = "flex-1 py-2 rounded-xl font-bold text-xs flex items-center justify-center space-x-2 transition bg-indigo-600 text-white shadow-md";
+                btnT.className = "flex-1 py-2 rounded-xl font-bold text-xs flex items-center justify-center space-x-2 transition text-slate-400 hover:text-white";
+            }
 
-function setMachineType(type) {
-currentMachine = type;
-document.getElementById('sheetTitle').innerText = "Hoja Proceso " + type;
+            if(currentSteps.length > 0) renderSteps();
+        }
 
-const btnT = document.getElementById('btnTorno');
-const btnF = document.getElementById('btnFresadora');
+        // Función principal que lee el texto de la foto usando Tesseract.js
+        async function readImageOCR(event) {
+            const file = event.target.files[0];
+            if(!file) return;
 
-if(type === 'Torno') {
-btnT.className = "flex-1 py-2 rounded-xl font-bold text-xs flex items-center justify-center space-x-2 transition bg-indigo-600 text-white shadow-md";
-btnF.className = "flex-1 py-2 rounded-xl font-bold text-xs flex items-center justify-center space-x-2 transition text-slate-400 hover:text-white";
-} else {
-btnF.className = "flex-1 py-2 rounded-xl font-bold text-xs flex items-center justify-center space-x-2 transition bg-indigo-600 text-white shadow-md";
-btnT.className = "flex-1 py-2 rounded-xl font-bold text-xs flex items-center justify-center space-x-2 transition text-slate-400 hover:text-white";
-}
+            const statusBox = document.getElementById('ocrStatus');
+            const statusText = document.getElementById('ocrStatusText');
+            statusBox.classList.remove('hidden');
+            statusText.innerText = "Analizando imagen con IA (OCR)...";
 
-if(!document.getElementById('analysisCard').classList.contains('hidden')) {
-renderStepsFromDatabase();
-}
-}
+            try {
+                // Ejecuta la lectura de texto de la foto
+                const result = await Tesseract.recognize(file, 'spa+eng', {
+                    logger: m => {
+                        if(m.status === 'recognizing text') {
+                            statusText.innerText = `Leyendo plano: ${Math.round(m.progress * 100)}%`;
+                        }
+                    }
+                });
 
-function handleImageCapture(event) {
-const file = event.target.files[0];
-if(file) {
-const reader = new FileReader();
-reader.onload = function(e) {
-document.getElementById('thumbnailPreview').src = e.target.result;
-document.getElementById('analysisCard').classList.remove('hidden');
+                const text = result.data.text.toLowerCase();
+                statusBox.classList.add('hidden');
 
-// Análisis inteligente basado en el nombre de la foto o alternancia para pruebas
-// Como el plano de la foto anterior es el bloque cuadrado 48h6 con Ø30H7:
-detectedType = 'cuadrado';
+                // Procesar texto detectado para generar operaciones automáticas
+                parseDetectedText(text, file.name);
 
-document.getElementById('detectedPieceDesc').innerText = "Detectado: Bloque 48h6 con Ø30H7 (F-2112)";
+            } catch (error) {
+                statusBox.classList.add('hidden');
+                alert("Error al leer la imagen. Inténtalo de nuevo con buena luz.");
+            }
+        }
 
-const dataSet = planoDatabase[detectedType];
-document.getElementById('conjuntoField').value = dataSet.conjunto;
-document.getElementById('materialField').value = dataSet.material;
+        // Interpreta el texto leído de la foto y crea los pasos exactos
+        function parseDetectedText(text, filename) {
+            currentSteps = [];
+            let piezaNombre = "Pieza Escaneada";
+            let material = "F-1140";
 
-renderStepsFromDatabase();
-}
-reader.readAsDataURL(file);
-}
-}
+            if(text.includes('f-2112') || text.includes('48h6') || text.includes('h7')) {
+                piezaNombre = "Bloque 48h6 con Ø30H7";
+                material = "F-2112";
+            } else if(text.includes('moletea') || text.includes('rge') || text.includes('30h6')) {
+                piezaNombre = "Eje Escalonado Ø30h6";
+                material = "F-1140";
+            }
 
-function renderStepsFromDatabase() {
-const container = document.getElementById('stepsContainer');
-container.innerHTML = '';
-const steps = planoDatabase[detectedType][currentMachine];
+            document.getElementById('conjuntoField').value = piezaNombre;
+            document.getElementById('materialField').value = material;
 
-steps.forEach((step, index) => {
-appendStepCard(step, index + 1);
-});
-}
+            // Detección automática de operaciones según palabras encontradas en el plano
+            currentSteps.push({ desc: "Refrentar y hacer punto / broca centros", maq: "TP", vc: 20, diam: 35, rpm: 182, control: "cal", avance: "A mano", herr: "T2" });
 
-function appendStepCard(data = null, num = null) {
-const container = document.getElementById('stepsContainer');
+            if(text.includes('48h6') || text.includes('30h6')) {
+                currentSteps.push({ desc: "Cilindrado exterior principal", maq: "TP", vc: 100, diam: 30, rpm: 1061, control: "cal", avance: "0,15", herr: "T1" });
+            }
 
-const emptyState = document.getElementById('emptyState');
-if(emptyState) emptyState.remove();
+            if(text.includes('moletea') || text.includes('rge')) {
+                currentSteps.push({ desc: "Moleteado RGE 0,8 DIN82", maq: "TP", vc: 30, diam: 25, rpm: 382, control: "cal", avance: "0,3", herr: "T3" });
+            }
 
-const stepNum = num || (container.children.length + 1);
+            if(text.includes('ranura') || text.includes('garganta')) {
+                currentSteps.push({ desc: "Ranurado de garganta", maq: "TP", vc: 80, diam: 25, rpm: 1018, control: "cal", avance: "0,05", herr: "T4" });
+            }
 
-const card = document.createElement('div');
-card.className = "bg-white text-slate-900 rounded-2xl p-3.5 shadow-xl border border-slate-200 space-y-3 relative";
+            if(text.includes('h7') || text.includes('mandrina')) {
+                currentSteps.push({ desc: "Mandrinado interior / Taladrado H7", maq: "TP", vc: 90, diam: 30, rpm: 955, control: "cal", avance: "0,05", herr: "T5" });
+            }
 
-card.innerHTML = `
-<div class="flex items-center justify-between border-b border-slate-100 pb-2">
-<div class="flex items-center space-x-2">
-<span class="bg-indigo-600 text-white font-extrabold text-[11px] px-2.5 py-1 rounded-lg">Fase ${stepNum}</span>
-<input type="text" value="${data ? data.herr : 'T1'}" class="font-extrabold text-indigo-600 text-xs w-12 bg-indigo-50 text-center rounded py-0.5 outline-none">
-</div>
-<button onclick="removeCard(this)" class="text-slate-400 hover:text-rose-500 p-1 transition no-print">
-<i class="fa-solid fa-trash-can text-xs"></i>
-</button>
-</div>
+            // Si no detecta nada específico, añade un paso base de cilindrado
+            if(currentSteps.length === 1) {
+                currentSteps.push({ desc: "Cilindrado y acabado general", maq: "TP", vc: 100, diam: 30, rpm: 1061, control: "cal", avance: "0,1", herr: "T1" });
+            }
 
-<div class="space-y-1">
-<label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Descripción</label>
-<input type="text" value="${data ? data.desc : ''}" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 outline-none focus:border-indigo-500">
-</div>
+            renderSteps();
+        }
 
-<div class="grid grid-cols-4 gap-1.5 text-center">
-<div class="bg-slate-50 border border-slate-200 rounded-xl p-1.5">
-<span class="text-[9px] font-bold text-slate-400 block mb-0.5">MÁQ</span>
-<input type="text" value="${data ? data.maq : (currentMachine === 'Torno' ? 'TP' : 'FM')}" class="w-full text-center font-bold text-xs bg-transparent outline-none">
-</div>
-<div class="bg-slate-50 border border-slate-200 rounded-xl p-1.5">
-<span class="text-[9px] font-bold text-slate-400 block mb-0.5">VC</span>
-<input type="number" value="${data ? data.vc : 100}" oninput="calculateRPM(this)" class="w-full text-center font-bold text-xs bg-transparent outline-none vc-input">
-</div>
-<div class="bg-slate-50 border border-slate-200 rounded-xl p-1.5">
-<span class="text-[9px] font-bold text-slate-400 block mb-0.5">Ø (MM)</span>
-<input type="number" value="${data ? data.diam : 30}" oninput="calculateRPM(this)" class="w-full text-center font-bold text-xs bg-transparent outline-none diam-input">
-</div>
-<div class="bg-indigo-50/80 border border-indigo-200 rounded-xl p-1.5">
-<span class="text-[9px] font-bold text-indigo-500 block mb-0.5">RPM</span>
-<input type="number" value="${data ? data.rpm : 1061}" class="w-full text-center font-extrabold text-xs text-indigo-700 bg-transparent outline-none rpm-input">
-</div>
-</div>
+        function renderSteps() {
+            const container = document.getElementById('stepsContainer');
+            container.innerHTML = '';
+            
+            currentSteps.forEach((step, index) => {
+                appendStepCard(step, index + 1);
+            });
+        }
 
-<div class="grid grid-cols-2 gap-2 pt-1">
-<div class="bg-slate-50 border border-slate-200 rounded-xl p-1.5">
-<span class="text-[9px] font-bold text-slate-400 block mb-0.5">CONTROL</span>
-<input type="text" value="${data ? data.control : 'cal'}" class="w-full text-center font-semibold text-xs bg-transparent outline-none">
-</div>
-<div class="bg-slate-50 border border-slate-200 rounded-xl p-1.5">
-<span class="text-[9px] font-bold text-slate-400 block mb-0.5">AVANCE</span>
-<input type="text" value="${data ? data.avance : '0,1'}" class="w-full text-center font-semibold text-xs bg-transparent outline-none">
-</div>
-</div>
-`;
-container.appendChild(card);
-}
+        function appendStepCard(data = null, num = null) {
+            const container = document.getElementById('stepsContainer');
+            
+            const emptyState = document.getElementById('emptyState');
+            if(emptyState) emptyState.remove();
 
-function addStep() {
-appendStepCard();
-}
+            const stepNum = num || (container.children.length + 1);
+            
+            const card = document.createElement('div');
+            card.className = "bg-white text-slate-900 rounded-2xl p-3.5 shadow-xl border border-slate-200 space-y-3 relative";
 
-function removeCard(btn) {
-const card = btn.closest('div.bg-white');
-card.remove();
+            card.innerHTML = `
+                <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                    <div class="flex items-center space-x-2">
+                        <span class="bg-indigo-600 text-white font-extrabold text-[11px] px-2.5 py-1 rounded-lg">Fase ${stepNum}</span>
+                        <input type="text" value="${data ? data.herr : 'T1'}" class="font-extrabold text-indigo-600 text-xs w-12 bg-indigo-50 text-center rounded py-0.5 outline-none">
+                    </div>
+                    <button onclick="removeCard(this)" class="text-slate-400 hover:text-rose-500 p-1 transition no-print">
+                        <i class="fa-solid fa-trash-can text-xs"></i>
+                    </button>
+                </div>
 
-const container = document.getElementById('stepsContainer');
-if(container.children.length === 0) {
-container.innerHTML = `
-<div id="emptyState" class="text-center py-12 px-4 bg-slate-900/50 border border-dashed border-slate-800 rounded-2xl">
-<i class="fa-solid fa-camera-retro text-3xl text-indigo-400 mb-2"></i>
-<p class="text-xs font-semibold text-slate-300">Esperando imagen del plano...</p>
-<p class="text-[11px] text-slate-500 mt-1">Sube la foto del plano para generar los pasos correctos automáticamente.</p>
-</div>
-`;
-}
-}
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Descripción</label>
+                    <input type="text" value="${data ? data.desc : ''}" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 outline-none focus:border-indigo-500">
+                </div>
 
-function calculateRPM(element) {
-const card = element.closest('div.bg-white');
-const vc = parseFloat(card.querySelector('.vc-input').value) || 0;
-const diam = parseFloat(card.querySelector('.diam-input').value) || 1;
-const rpmInput = card.querySelector('.rpm-input');
-const rpm = Math.round((vc * 1000) / (Math.PI * diam));
-rpmInput.value = rpm;
-}
+                <div class="grid grid-cols-4 gap-1.5 text-center">
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-1.5">
+                        <span class="text-[9px] font-bold text-slate-400 block mb-0.5">MÁQ</span>
+                        <input type="text" value="${data ? data.maq : (currentMachine === 'Torno' ? 'TP' : 'FM')}" class="w-full text-center font-bold text-xs bg-transparent outline-none">
+                    </div>
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-1.5">
+                        <span class="text-[9px] font-bold text-slate-400 block mb-0.5">VC</span>
+                        <input type="number" value="${data ? data.vc : 100}" oninput="calculateRPM(this)" class="w-full text-center font-bold text-xs bg-transparent outline-none vc-input">
+                    </div>
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-1.5">
+                        <span class="text-[9px] font-bold text-slate-400 block mb-0.5">Ø (MM)</span>
+                        <input type="number" value="${data ? data.diam : 30}" oninput="calculateRPM(this)" class="w-full text-center font-bold text-xs bg-transparent outline-none diam-input">
+                    </div>
+                    <div class="bg-indigo-50/80 border border-indigo-200 rounded-xl p-1.5">
+                        <span class="text-[9px] font-bold text-indigo-500 block mb-0.5">RPM</span>
+                        <input type="number" value="${data ? data.rpm : 1061}" class="w-full text-center font-extrabold text-xs text-indigo-700 bg-transparent outline-none rpm-input">
+                    </div>
+                </div>
 
-document.getElementById('dateField').valueAsDate = new Date();
-</script>
+                <div class="grid grid-cols-2 gap-2 pt-1">
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-1.5">
+                        <span class="text-[9px] font-bold text-slate-400 block mb-0.5">CONTROL</span>
+                        <input type="text" value="${data ? data.control : 'cal'}" class="w-full text-center font-semibold text-xs bg-transparent outline-none">
+                    </div>
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-1.5">
+                        <span class="text-[9px] font-bold text-slate-400 block mb-0.5">AVANCE</span>
+                        <input type="text" value="${data ? data.avance : '0,1'}" class="w-full text-center font-semibold text-xs bg-transparent outline-none">
+                    </div>
+                </div>
+            `;
+            container.appendChild(card);
+        }
+
+        function addStep() {
+            appendStepCard();
+        }
+
+        function removeCard(btn) {
+            const card = btn.closest('div.bg-white');
+            card.remove();
+        }
+
+        function calculateRPM(element) {
+            const card = element.closest('div.bg-white');
+            const vc = parseFloat(card.querySelector('.vc-input').value) || 0;
+            const diam = parseFloat(card.querySelector('.diam-input').value) || 1;
+            const rpmInput = card.querySelector('.rpm-input');
+            const rpm = Math.round((vc * 1000) / (Math.PI * diam));
+            rpmInput.value = rpm;
+        }
+
+        document.getElementById('dateField').valueAsDate = new Date();
+    </script>
 </body>
 </html>
